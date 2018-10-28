@@ -2,3 +2,4 @@
 halite
 replays/
 *.pyc
+*.log
