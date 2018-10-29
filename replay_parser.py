@@ -4,6 +4,21 @@ import hlt
 import numpy as np
 
 
+def localize_matrix(m, new_length, old_center_x, old_center_y):
+    # at most can double 
+    old_length = m.shape[0]
+    tall_m = np.concatenate((m, m,m), 0)   
+    big_m = np.concatenate((tall_m, tall_m, tall_m), 1) 
+
+    short_edge = int(np.floor((new_length - 1)/2))
+    long_edge = int(np.ceil((new_length - 1)/2))
+
+    new_center_x = old_center_x + old_length
+    new_center_y = old_center_y + old_length 
+
+    centered_m = big_m[new_center_x - short_edge: new_center_x + long_edge + 1, new_center_y - short_edge: new_center_y + long_edge + 1]
+    return centered_m 
+
 def load_replay(file_name, player_id):
     parsed_frames = []
     with open(file_name, 'rb') as f:
