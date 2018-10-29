@@ -2,10 +2,7 @@ import json
 import zstd
 import hlt
 import numpy as np
-np.set_printoptions(threshold=np.inf)
 
-def normalize_location(x, y, board_length):
-    return x%board_length, y%board_length
 
 def load_replay(file_name, player_id):
     parsed_frames = []
@@ -78,10 +75,8 @@ def load_replay(file_name, player_id):
                 player = str(event['owner_id'])
                 if (player == player_id): # friendly 
                     friendly_dropoffs[x][y] = 1
-                    print(t, "f", x, y )
                 else: # enemy 
                     enemy_dropoffs[x][y] = 1
-                    print(t, "e", x, y )
 
         halite_left = old_halite.sum()  # This is different than the halite available on the
                                         # online thing.  Mine doesn't count onboard ship halite. 
@@ -91,4 +86,5 @@ def load_replay(file_name, player_id):
             sum(old_halite), player_energy, rounds_left, board_length))
 
     return parsed_frames
+
 
