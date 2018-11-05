@@ -9,6 +9,7 @@ from hlt import constants
 
 # This library contains direction metadata to better interface with the game.
 from hlt.positionals import Direction
+from hlt.positionals import Position
 
 # This library allows you to generate random numbers.
 import random
@@ -16,7 +17,7 @@ import random
 # Logging allows you to save messages for yourself. This is required because the regular STDOUT
 #   (print statements) are reserved for the engine-bot communication.
 import logging
-
+import numpy as np
 """ <<<Game Begin>>> """
 
 # This game object contains the initial game state.
@@ -29,6 +30,7 @@ game.ready("MyPythonBot")
 # Now that your bot is initialized, save a message to yourself in the log file with some important information.
 #   Here, you log here your id, which you can always fetch from the game object by using my_id.
 logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
+board_length = game.game_map.width
 
 """ <<<Game Loop>>> """
 
@@ -39,6 +41,14 @@ while True:
     # You extract player metadata and the updated map metadata here for convenience.
     me = game.me
     game_map = game.game_map
+
+    rounds_left = constants.MAX_TURNS - game.turn_number
+    halite = np.array([[game_map[Position(x,y)].halite_amount for x in range(board_length)] for y in range(board_length)])
+    friendly_ships_halite = np.array([[game_map[Position(x,y)].structure_type for x in range(board_length)] for y in range(board_length)])
+    np.set_printoptions(threshold='nan')
+    logging.info(str(friendly_ships_halite))
+
+
 
     # A command queue holds all the commands you will run this turn. You build this list up and submit it at the
     #   end of the turn.

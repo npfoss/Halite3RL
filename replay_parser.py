@@ -16,7 +16,7 @@ def localize_matrix(m, new_length, old_center_x, old_center_y):
     new_center_x = old_center_x + old_length
     new_center_y = old_center_y + old_length 
 
-    centered_m = big_m[new_center_x - short_edge: new_center_x + long_edge + 1, new_center_y - short_edge: new_center_y + long_edge + 1]
+    centered_m = big_m[new_center_y - short_edge: new_center_y + long_edge + 1, new_center_x - short_edge: new_center_x + long_edge + 1]
     return centered_m 
 
 def load_replay(file_name, player_id):
@@ -34,18 +34,18 @@ def load_replay(file_name, player_id):
     friendly_dropoffs = np.zeros((board_length, board_length), dtype = np.int32)
     enemy_dropoffs = np.zeros((board_length, board_length), dtype = np.int32)
 
-    for x in range(board_length): #halite 
-        for y in range(board_length):
-            halite[x][y] = data['production_map']['grid'][y][x]['energy']
+    for y in range(board_length): #halite 
+        for x in range(board_length):
+            halite[y][x] = data['production_map']['grid'][y][x]['energy']
 
     for player_info in data['players']: # dropoffs 
         player = str(player_info['player_id'])
         x = player_info['factory_location']['x']
         y = player_info['factory_location']['y']    
         if (player == player_id): # friendly
-            friendly_dropoffs[x][y] = 1
+            friendly_dropoffs[y][x] = 1
         else: #enemy
-            enemy_dropoffs[x][y] = 1
+            enemy_dropoffs[y][x] = 1
 
 
     # ***** Update for each frame ***** 
@@ -67,7 +67,7 @@ def load_replay(file_name, player_id):
         for changed_cell in frame['cells']: # update halite 
             x = changed_cell['x']
             y = changed_cell['y']
-            halite[x][y] = changed_cell['production']
+            halite[y][x] = changed_cell['production']
 
         for player in frame['entities']: # update ships 
             player_entities = frame['entities'][player]
@@ -77,11 +77,11 @@ def load_replay(file_name, player_id):
                 y = entity['y']
                 energy = entity['energy']
                 if (player == player_id): # friendly 
-                    friendly_ships[x][y] = 1
-                    friendly_ships_halite[x][y] = energy
+                    friendly_ships[y][x] = 1
+                    friendly_ships_halite[y][x] = energy
                 else: # enemy 
-                    enemy_ships[x][y] = 1
-                    enemy_ships_halite[x][y] = energy 
+                    enemy_ships[y][x] = 1
+                    enemy_ships_halite[y][x] = energy 
 
         for event in frame['events']: # update dropoffs 
             if event['type'] == 'construct':
@@ -89,9 +89,9 @@ def load_replay(file_name, player_id):
                 y = event['location']['y']
                 player = str(event['owner_id'])
                 if (player == player_id): # friendly 
-                    friendly_dropoffs[x][y] = 1
+                    friendly_dropoffs[y][x] = 1
                 else: # enemy 
-                    enemy_dropoffs[x][y] = 1
+                    enemy_dropoffs[y][x] = 1
 
         halite_left = old_halite.sum()  # This is different than the halite available on the
                                         # online thing.  Mine doesn't count onboard ship halite. 
@@ -101,5 +101,3 @@ def load_replay(file_name, player_id):
             sum(old_halite), player_energy, rounds_left, board_length))
 
     return parsed_frames
-
-
