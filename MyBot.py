@@ -45,8 +45,8 @@ while True:
     rounds_left = constants.MAX_TURNS - game.turn_number
     halite = np.array([[game_map[Position(x,y)].halite_amount for x in range(board_length)] for y in range(board_length)])
     friendly_ships_halite = np.array([[game_map[Position(x,y)].structure_type for x in range(board_length)] for y in range(board_length)])
-    np.set_printoptions(threshold='nan')
-    logging.info(str(friendly_ships_halite))
+    #np.set_printoptions(threshold='nan')
+    logging.info(str(np.nonzero(friendly_ships_halite)))
 
 
 
