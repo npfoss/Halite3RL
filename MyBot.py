@@ -18,6 +18,10 @@ import random
 #   (print statements) are reserved for the engine-bot communication.
 import logging
 import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+
+
 """ <<<Game Begin>>> """
 
 # This game object contains the initial game state.
@@ -32,6 +36,18 @@ game.ready("MyPythonBot")
 logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
 board_length = game.game_map.width
 
+
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(5, 5, strides=(1, 1), input_shape=[board_length, board_length, 1]),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(512, activation=tf.nn.relu),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(5, activation=tf.nn.softmax)
+])
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
 """ <<<Game Loop>>> """
 
 while True:
@@ -43,10 +59,11 @@ while True:
     game_map = game.game_map
 
     rounds_left = constants.MAX_TURNS - game.turn_number
-    halite = np.array([[game_map[Position(x,y)].halite_amount for x in range(board_length)] for y in range(board_length)])
+    halite = np.array([[[game_map[Position(x,y)].halite_amount] for x in range(board_length)] for y in range(board_length)])
     friendly_ships_halite = np.array([[game_map[Position(x,y)].structure_type for x in range(board_length)] for y in range(board_length)])
     #np.set_printoptions(threshold='nan')
     logging.info(str(np.nonzero(friendly_ships_halite)))
+
 
 
 
@@ -55,12 +72,16 @@ while True:
     command_queue = []
 
     for ship in me.get_ships():
+
+        logging.info(model.predict_classes([[halite]]))
+        
         # For each of your ships, move randomly if the ship is on a low halite location or the ship is full.
         #   Else, collect halite.
-        if game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full:
+        if model.predict_classes([[halite]])[0] < 4 and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
             command_queue.append(
                 ship.move(
-                    random.choice([ Direction.North, Direction.South, Direction.East, Direction.West ])))
+                    [ Direction.North, Direction.South, Direction.East, Direction.West][model.predict_classes([[halite]])[0]]))
+                    # random.choice([ Direction.North, Direction.South, Direction.East, Direction.West ])))
         else:
             command_queue.append(ship.stay_still())
 
