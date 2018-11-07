@@ -28,9 +28,6 @@ class HaliteRunner():
         size = 32# np.random.choice([32, 40, 48, 56, 64])
         num_players = 2# if (np.random.random() < 0.5) else 4
         o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
-        # process = subprocess.Popen(['./acer_run.sh', str(size), str(num_players)], stdout=subprocess.PIPE)
-        # out, err = process.communicate()
-        # print(out)
         j = json.loads(o.decode("utf-8"))
 
         #next, parse the replay and take all the credit
