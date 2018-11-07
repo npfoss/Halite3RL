@@ -3,7 +3,7 @@ from baselines.common.runners import AbstractEnvRunner
 from baselines.common.vec_env.vec_frame_stack import VecFrameStack
 from gym import spaces
 import os
-# import replay_parser
+from replay_parser import localize_matrix, load_replay
 
 import subprocess
 import json
@@ -34,7 +34,7 @@ class HaliteRunner():
         player = np.random.randint(0, num_players-1)
         replay_file_name = j['replay']
 
-
+        replay = load_replay(replay_file_name, player)
 
 
         # enc_obs = np.split(self.obs, self.nstack, axis=3)  # so now list of obs steps
