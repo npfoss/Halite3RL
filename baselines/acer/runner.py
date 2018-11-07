@@ -13,7 +13,7 @@ import json
 class HaliteRunner():
 
     def __init__(self, model):
-        self.nact = 5
+        self.nact = 6
         self.nenv = 1
         self.nsteps = 501 # (max game len) *** MAY NEED TO VARY WITH GAME (?) buffer size affected by this...
         # self.batch_ob_shape = (nenv*(nsteps+1),) + env.observation_space.shape
