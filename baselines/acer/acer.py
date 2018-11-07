@@ -15,7 +15,7 @@ from baselines.a2c.utils import Scheduler, find_trainable_variables
 from baselines.a2c.utils import EpisodeStats
 from baselines.a2c.utils import get_by_index, check_shape, avg_norm, gradient_add, q_explained_variance
 from baselines.acer.buffer import Buffer
-from baselines.acer.runner import Runner
+from baselines.acer.runner import HaliteRunner
 
 # remove last step
 def strip(var, nenvs, nsteps, flat = False):
@@ -358,7 +358,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
                   total_timesteps=total_timesteps, lrschedule=lrschedule, c=c,
                   trust_region=trust_region, alpha=alpha, delta=delta)
 
-    runner = Runner(env=env, model=model, nsteps=nsteps)
+    runner = HaliteRunner(model=model)
     if replay_ratio > 0:
         buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size)
     else:
