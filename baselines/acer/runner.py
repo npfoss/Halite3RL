@@ -3,8 +3,12 @@ from baselines.common.runners import AbstractEnvRunner
 from baselines.common.vec_env.vec_frame_stack import VecFrameStack
 from gym import spaces
 import os
+# import replay_parser
 
 import subprocess
+import json
+
+# from IPython import embed
 
 class HaliteRunner():
 
@@ -20,9 +24,20 @@ class HaliteRunner():
 
     def run(self):
 
-        size = np.random.choice([32, 40, 48, 56, 64])
-        num_players = 2 if (np.random.random() < 0.5) else 4
-        subprocess.run(['./acer_run.sh', str(size), str(num_players)])
+        #first, run a game.
+        size = 32# np.random.choice([32, 40, 48, 56, 64])
+        num_players = 2# if (np.random.random() < 0.5) else 4
+        o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
+        # process = subprocess.Popen(['./acer_run.sh', str(size), str(num_players)], stdout=subprocess.PIPE)
+        # out, err = process.communicate()
+        # print(out)
+        j = json.loads(o.decode("utf-8"))
+
+        #next, parse the replay and take all the credit
+        player = np.random.randint(0, num_players-1)
+        replay_file_name = j['replay']
+
+
 
 
         # enc_obs = np.split(self.obs, self.nstack, axis=3)  # so now list of obs steps
