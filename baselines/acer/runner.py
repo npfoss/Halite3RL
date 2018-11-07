@@ -20,14 +20,9 @@ class HaliteRunner():
 
     def run(self):
 
-        path = os.path.dirname(os.path.abspath(__file__)) + '/../..'
-        print('path:',path)
-        print(subprocess.run('ls ' + path))
         size = np.random.choice([32, 40, 48, 56, 64])
         num_players = 2 if (np.random.random() < 0.5) else 4
-        o = subprocess.run('pwd')
-        o = subprocess.run('{1}/halite --replay-directory {1}/replays/ -vvv --no-timeout --width {0} --height {0} '.format(size, path) + ' '.join(['"python3 MyBot.py"' for x in range(num_players)]))
-        print(o)
+        subprocess.run(['./acer_run.sh', str(size), str(num_players)])
 
 
         # enc_obs = np.split(self.obs, self.nstack, axis=3)  # so now list of obs steps
