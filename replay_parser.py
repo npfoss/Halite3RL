@@ -20,6 +20,7 @@ def localize_matrix(m, new_length, old_center_x, old_center_y):
     return centered_m 
 
 def load_replay(file_name, player_id):
+	player_id = str(player_id)
     parsed_frames = []
     with open(file_name, 'rb') as f:
         data = json.loads(zstd.loads(f.read()))
@@ -96,8 +97,11 @@ def load_replay(file_name, player_id):
         halite_left = old_halite.sum()  # This is different than the halite available on the
                                         # online thing.  Mine doesn't count onboard ship halite. 
 
-        parsed_frames.append((old_halite, friendly_ships, friendly_ships_halite, 
-            old_friendly_dropoffs, enemy_ships, enemy_ships_halite, old_enemy_dropoffs,
-            sum(old_halite), player_energy, rounds_left, board_length))
+        turn_results = {"halite": old_halite, "friendly_ships": friendly_ships, "friendly_ships_halite":friendly_ships_halite,
+        				"friendly_dropoffs": old_friendly_dropoffs, "enemy_ships": enemy_ships, "enemy_ships_halite": enemy_ships_halite,
+        				"enemy_dropoffs": old_enemy_dropoffs, "total_halite": sum(old_halite), "player_energy": player_energy, 
+        				"rounds_left": rounds_left, "board_length": board_length}                           
+
+        parsed_frames.append(turn_results)
 
     return parsed_frames
