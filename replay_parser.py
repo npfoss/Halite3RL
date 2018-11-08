@@ -3,6 +3,7 @@ import zstd
 import hlt
 import numpy as np
 
+# from IPython import embed
 
 def localize_matrix(m, new_length, old_center_x, old_center_y):
     # at most can double 
@@ -47,6 +48,8 @@ def load_replay(file_name, player_id):
             friendly_dropoffs[y][x] = 1
         else: #enemy
             enemy_dropoffs[y][x] = 1
+    
+    ship_info = {}
 
 
     # ***** Update for each frame ***** 
@@ -61,9 +64,13 @@ def load_replay(file_name, player_id):
         enemy_ships = np.zeros((board_size, board_size), dtype = np.int32)
         enemy_ships_halite = np.zeros((board_size, board_size), dtype = np.int32)
         old_enemy_dropoffs = np.copy(enemy_dropoffs)
+        ship_info = {}
+        # move info keyed by ship id
+        moves = {str(d['id']): d for d in frame['moves'][player_id] if 'id' in d} if player_id in frame['moves'] else {}
 
         rounds_left = max_turns - t
         player_energy = frame['energy'][player_id]
+        energy_delta = 0 if t > actual_turns-2 else data['full_frames'][t+1]['energy'][player_id] - player_energy
 
         for changed_cell in frame['cells']: # update halite 
             x = changed_cell['x']
@@ -78,11 +85,23 @@ def load_replay(file_name, player_id):
                 y = entity['y']
                 energy = entity['energy']
                 if (player == player_id): # friendly 
+                    ship_info[entity_id] = {'pos': {'x': x, 'y': y}}
+                    ship_info[entity_id]['energy'] = energy
+                    # note: create supply depot move looks like this: {'id': 5, 'type': 'c'}
+                    ship_info[entity_id]['action'] = 'o' if not entity_id in moves else \
+                            moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
                     friendly_ships[y][x] = 1
                     friendly_ships_halite[y][x] = energy
                 else: # enemy 
                     enemy_ships[y][x] = 1
                     enemy_ships_halite[y][x] = energy 
+
+        if t > 0:
+            # compute ship halite deltas for previous turn
+            for idee in parsed_frames[t-1]['ship_info']:
+                parsed_frames[t-1]['ship_info'][idee]['energy_delta'] = \
+                                  ship_info[idee]['energy'] if idee in ship_info else 0 \
+                                - parsed_frames[t-1]['ship_info'][idee]['energy']
 
         for event in frame['events']: # update dropoffs 
             if event['type'] == 'construct':
@@ -108,7 +127,10 @@ def load_replay(file_name, player_id):
                         "total_halite"          : sum(old_halite), # total on the board
                         "player_energy"         : player_energy, # how much you have in the bank
                         "rounds_left"           : rounds_left,
-                        "board_size"            : board_size
+                        "board_size"            : board_size,
+                        "energy_delta"          : energy_delta,
+                        # ** AUGMENTED WITH DELTA RETROACTIVELY
+                        "ship_info"             : ship_info, # dictionary keyed by ship_id, contains (x,y) pos, energy, energy-delta, and action
                        }
 
         parsed_frames.append(turn_results)
