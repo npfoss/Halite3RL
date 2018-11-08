@@ -23,20 +23,20 @@ def load_replay(file_name, player_id):
     player_id = str(player_id)
     parsed_frames = []
     with open(file_name, 'rb') as f:
-        data = json.loads(zstd.loads(f.read()))
+        data = json.loads(zstd.loads(f.read()).decode("utf-8"))
 
     # ***** Unchanging constants *****
-    board_length = data['production_map']['width']
+    board_size = data['production_map']['width']
     max_turns = data['GAME_CONSTANTS']['MAX_TURNS']
     actual_turns = len(data['full_frames'])
 
     # ***** Load initial state ***** 
-    halite = np.zeros((board_length, board_length), dtype = np.int32)
-    friendly_dropoffs = np.zeros((board_length, board_length), dtype = np.int32)
-    enemy_dropoffs = np.zeros((board_length, board_length), dtype = np.int32)
+    halite = np.zeros((board_size, board_size), dtype = np.int32)
+    friendly_dropoffs = np.zeros((board_size, board_size), dtype = np.int32)
+    enemy_dropoffs = np.zeros((board_size, board_size), dtype = np.int32)
 
-    for y in range(board_length): #halite 
-        for x in range(board_length):
+    for y in range(board_size): #halite 
+        for x in range(board_size):
             halite[y][x] = data['production_map']['grid'][y][x]['energy']
 
     for player_info in data['players']: # dropoffs 
@@ -55,11 +55,11 @@ def load_replay(file_name, player_id):
 
         # Generate matrices for this turn 
         old_halite = np.copy(halite)
-        friendly_ships = np.zeros((board_length, board_length), dtype = np.int32)
-        friendly_ships_halite = np.zeros((board_length, board_length), dtype = np.int32)
+        friendly_ships = np.zeros((board_size, board_size), dtype = np.int32)
+        friendly_ships_halite = np.zeros((board_size, board_size), dtype = np.int32)
         old_friendly_dropoffs = np.copy(friendly_dropoffs)
-        enemy_ships = np.zeros((board_length, board_length), dtype = np.int32)
-        enemy_ships_halite = np.zeros((board_length, board_length), dtype = np.int32)
+        enemy_ships = np.zeros((board_size, board_size), dtype = np.int32)
+        enemy_ships_halite = np.zeros((board_size, board_size), dtype = np.int32)
         old_enemy_dropoffs = np.copy(enemy_dropoffs)
 
         rounds_left = max_turns - t
@@ -97,10 +97,19 @@ def load_replay(file_name, player_id):
         halite_left = old_halite.sum()  # This is different than the halite available on the
                                         # online thing.  Mine doesn't count onboard ship halite. 
 
-        turn_results = {"halite": old_halite, "friendly_ships": friendly_ships, "friendly_ships_halite":friendly_ships_halite,
-                        "friendly_dropoffs": old_friendly_dropoffs, "enemy_ships": enemy_ships, "enemy_ships_halite": enemy_ships_halite,
-                        "enemy_dropoffs": old_enemy_dropoffs, "total_halite": sum(old_halite), "player_energy": player_energy, 
-                        "rounds_left": rounds_left, "board_length": board_length}                           
+        # remember that old mean "beginning of turn" aka current state during which actions were taken
+        turn_results = {"halite_map"            : old_halite,
+                        "friendly_ships"        : friendly_ships, # indicator variable
+                        "friendly_ships_halite" : friendly_ships_halite,
+                        "friendly_dropoffs"     : old_friendly_dropoffs, # indicator
+                        "enemy_ships"           : enemy_ships,
+                        "enemy_ships_halite"    : enemy_ships_halite,
+                        "enemy_dropoffs"        : old_enemy_dropoffs,
+                        "total_halite"          : sum(old_halite), # total on the board
+                        "player_energy"         : player_energy, # how much you have in the bank
+                        "rounds_left"           : rounds_left,
+                        "board_size"            : board_size
+                       }
 
         parsed_frames.append(turn_results)
 
