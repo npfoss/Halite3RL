@@ -18,8 +18,8 @@ import random
 #   (print statements) are reserved for the engine-bot communication.
 import logging
 import numpy as np
-import tensorflow as tf
-from tensorflow import keras
+#import tensorflow as tf
+#from tensorflow import keras
 
 
 """ <<<Game Begin>>> """
@@ -37,16 +37,10 @@ logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
 board_length = game.game_map.width
 
 
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(5, 5, strides=(1, 1), input_shape=[board_length, board_length, 1]),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(512, activation=tf.nn.relu),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(5, activation=tf.nn.softmax)
-])
-model.compile(optimizer='adam',
-              loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
+
+with open("weights") as f:
+	model=pkl.load(f)
+
 
 """ <<<Game Loop>>> """
 
@@ -73,14 +67,13 @@ while True:
 
     for ship in me.get_ships():
 
-        logging.info(model.predict_classes([[halite]]))
-        
         # For each of your ships, move randomly if the ship is on a low halite location or the ship is full.
         #   Else, collect halite.
         if model.predict_classes([[halite]])[0] < 4 and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
+            actions, mus, states = self.model._step(self.obs, S=self.states, M=self.dones)
             command_queue.append(
                 ship.move(
-                    [ Direction.North, Direction.South, Direction.East, Direction.West][model.predict_classes([[halite]])[0]]))
+                    [ Direction.North, Direction.South, Direction.East, Direction.West][actions[0]]))
                     # random.choice([ Direction.North, Direction.South, Direction.East, Direction.West ])))
         else:
             command_queue.append(ship.stay_still())
