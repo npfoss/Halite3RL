@@ -5,7 +5,7 @@
 halite
 replays/
 *.log
-
+weights
 
 ##########
 # Python #
