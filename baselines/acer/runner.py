@@ -29,9 +29,9 @@ class HaliteRunner():
         size = 32# np.random.choice([32, 40, 48, 56, 64])
         num_players = 2# if (np.random.random() < 0.5) else 4
 
-		# pickle the model
-		with open("weights", "w+") as f:
-			pkl.dump(self.model, f)
+        # pickle the model
+        with open("weights", "w+") as f:
+            pkl.dump(self.model, f)
 
         o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
         j = json.loads(o.decode("utf-8"))

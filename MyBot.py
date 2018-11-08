@@ -39,7 +39,7 @@ board_length = game.game_map.width
 
 
 with open("weights") as f:
-	model=pkl.load(f)
+    model=pkl.load(f)
 
 
 """ <<<Game Loop>>> """
