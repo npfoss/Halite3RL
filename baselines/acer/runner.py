@@ -17,6 +17,7 @@ class HaliteRunner():
         self.nact = 6
         self.nenv = 1
         self.nsteps = 501 # (max game len) *** MAY NEED TO VARY WITH GAME (?) buffer size affected by this...
+        self.model = model
         # self.batch_ob_shape = (nenv*(nsteps+1),) + env.observation_space.shape
 
         # self.obs_dtype = env.observation_space.dtype
@@ -31,7 +32,8 @@ class HaliteRunner():
 
         # pickle the model
         with open("weights", "w+") as f:
-            pkl.dump(self.model, f)
+            #pkl.dump(self.model, f)
+            pass
 
         o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
         j = json.loads(o.decode("utf-8"))
