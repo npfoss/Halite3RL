@@ -167,6 +167,8 @@ def load_observations(file_name, player_id):
                 matrix = frame[key]
                 ship_obs[ship_obs_index] = localize_matrix(matrix, 64,
                                                                  y, x)
+                ship_obs_index += 1
+                
             ship_obs = np.swapaxes(ship_obs, 0,1)
             ship_obs = np.swapaxes(ship_obs, 1, 2)
             frame_obs.append( (tf.convert_to_tensor(ship_obs), ship_action,
