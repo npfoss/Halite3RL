@@ -15,7 +15,7 @@ class HaliteEnv:
                     np.inf, # enemy ship cargo
                     ])
         # self.observation_space = spaces.Box(lows, highs, dtype=np.int)
-        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(7, 64, 64), dtype=np.int)
+        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(64, 64, 1), dtype=np.int)
         # self.observation_space = spaces.Box(lows, highs, shape=(7, 64, 64), dtype=np.int)
 
         self.action_space = spaces.Discrete(6)

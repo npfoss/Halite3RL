@@ -26,6 +26,51 @@ def nature_cnn(unscaled_images, **conv_kwargs):
     h3 = conv_to_fc(h3)
     return activ(fc(h3, 'fc1', nh=512, init_scale=np.sqrt(2)))
 
+# @register("halite-cnn")
+# def cnn(**conv_kwargs):
+#     def network_fn(X):
+#         activ = tf.nn.relu
+#         h = activ(conv(X, 'c1', nf=32, rf=8, stride=4, init_scale=np.sqrt(2),
+#                        **conv_kwargs))
+#         h2 = activ(conv(h, 'c2', nf=64, rf=4, stride=2, init_scale=np.sqrt(2), **conv_kwargs))
+#         h3 = activ(conv(h2, 'c3', nf=64, rf=3, stride=1, init_scale=np.sqrt(2), **conv_kwargs))
+#         h3 = conv_to_fc(h3)
+#         return activ(fc(h3, 'fc1', nh=512, init_scale=np.sqrt(2)))
+
+#     # conv3d example I found online here: https://www.kaggle.com/shijianjian/3d-cnn-with-tensorflow
+#     def cnn_model(x_train_data, keep_rate=0.7, seed=None):
+    
+#         with tf.name_scope("layer_a"):
+#             # conv => 16*16*16
+#             conv1 = tf.layers.conv3d(inputs=x_train_data, filters=16, kernel_size=[3,3,3], padding='same', activation=tf.nn.relu)
+#             # conv => 16*16*16
+#             conv2 = tf.layers.conv3d(inputs=conv1, filters=32, kernel_size=[3,3,3], padding='same', activation=tf.nn.relu)
+#             # pool => 8*8*8
+#             pool3 = tf.layers.max_pooling3d(inputs=conv2, pool_size=[2, 2, 2], strides=2)
+            
+#         with tf.name_scope("layer_c"):
+#             # conv => 8*8*8
+#             conv4 = tf.layers.conv3d(inputs=pool3, filters=64, kernel_size=[3,3,3], padding='same', activation=tf.nn.relu)
+#             # conv => 8*8*8
+#             conv5 = tf.layers.conv3d(inputs=conv4, filters=128, kernel_size=[3,3,3], padding='same', activation=tf.nn.relu)
+#             # pool => 4*4*4
+#             pool6 = tf.layers.max_pooling3d(inputs=conv5, pool_size=[2, 2, 2], strides=2)
+            
+#         with tf.name_scope("batch_norm"):
+#             cnn3d_bn = tf.layers.batch_normalization(inputs=pool6, training=True)
+            
+#         with tf.name_scope("fully_con"):
+#             flattening = tf.reshape(cnn3d_bn, [-1, 4*4*4*128])
+#             dense = tf.layers.dense(inputs=flattening, units=1024, activation=tf.nn.relu)
+#             # (1-keep_rate) is the probability that the node will be kept
+#             dropout = tf.layers.dropout(inputs=dense, rate=keep_rate, training=True)
+            
+#         with tf.name_scope("y_conv"):
+#             y_conv = tf.layers.dense(inputs=dropout, units=10)
+        
+#         return y_conv
+
+#     return network_fn
 
 @register("mlp")
 def mlp(num_layers=2, num_hidden=64, activation=tf.tanh, layer_norm=False):
