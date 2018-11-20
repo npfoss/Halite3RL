@@ -165,15 +165,13 @@ def load_observations(file_name, player_id):
 
             for key in keys_to_add:
                 matrix = frame[key]
-                if not isinstance(matrix, np.ndarray):
-                    continue
                 ship_obs[ship_obs_index] = localize_matrix(matrix, 64,
                                                                  y, x)
-                ship_obs_index += 1
-            np.moveaxis(ship_obs, (0,1,2), (1,2,0))
+            ship_obs = np.swapaxes(ship_obs, 0,1)
+            ship_obs = np.swapaxes(ship_obs, 1, 2)
             frame_obs.append( (tf.convert_to_tensor(ship_obs), ship_action,
                                ship_reward) )
-
+            import pdb; pdb.set_trace()
 
         observations.append(frame_obs)
 
