@@ -18,7 +18,8 @@ def localize_matrix(m, new_length, old_center_y, old_center_x):
     new_center_x = old_center_x + old_length
     new_center_y = old_center_y + old_length 
 
-    centered_m = big_m[new_center_y - short_edge: new_center_y + long_edge + 1, new_center_x - short_edge: new_center_x + long_edge + 1]
+    centered_m = big_m[new_center_y - short_edge: new_center_y + long_edge + 1,
+                       new_center_x - short_edge: new_center_x + long_edge + 1]
     return centered_m 
 
 def load_replay(file_name, player_id):
@@ -146,6 +147,7 @@ def load_observations(file_name, player_id):
     for frame_index, frame in enumerate(parsed_frames):
         frame_obs = []
         ship_locations = frame["friendly_ships"].nonzero() #array of x locs, array of y locs
+
         num_ships = len(ship_locations[0])
         
         for ship_index in range(num_ships):
@@ -158,6 +160,7 @@ def load_observations(file_name, player_id):
 
             ship_obs_index = 0
 
+
             for key in frame.keys():
                 matrix = frame[key]
                 if not isinstance(matrix, np.ndarray):
@@ -168,6 +171,7 @@ def load_observations(file_name, player_id):
                 
             frame_obs.append( (tf.convert_to_tensor(ship_obs), ship_action,
                                ship_reward) )
+
         observations.append(frame_obs)
 
     return observations
@@ -175,4 +179,3 @@ def load_observations(file_name, player_id):
 if __name__ == "__main__":
     # for debugging
     obs = load_observations("replays/ex_replay_2.hlt", "0")
-
