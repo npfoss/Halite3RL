@@ -173,7 +173,6 @@ def load_observations(file_name, player_id):
             ship_obs = np.swapaxes(ship_obs, 1, 2)
             frame_obs.append( (tf.convert_to_tensor(ship_obs), ship_action,
                                ship_reward) )
-            import pdb; pdb.set_trace()
 
         observations.append(frame_obs)
 
