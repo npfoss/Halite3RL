@@ -11,7 +11,7 @@ import pickle as pkl
 
 # from IPython import embed
 
-class HaliteRunner():
+class HaliteRunner:
 
     def __init__(self, model):
         self.nact = 6
