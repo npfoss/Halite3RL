@@ -2,10 +2,11 @@ import json
 import zstd
 import hlt
 import numpy as np
+import tensorflow as tf
 
 # from IPython import embed
 
-def localize_matrix(m, new_length, old_center_x, old_center_y):
+def localize_matrix(m, new_length, old_center_y, old_center_x):
     # at most can double 
     old_length = m.shape[0]
     tall_m = np.concatenate((m, m,m), 0)   
@@ -124,7 +125,7 @@ def load_replay(file_name, player_id):
                         "enemy_ships"           : enemy_ships,
                         "enemy_ships_halite"    : enemy_ships_halite,
                         "enemy_dropoffs"        : old_enemy_dropoffs,
-                        "total_halite"          : sum(old_halite), # total on the board
+                        "total_halite"          : old_halite.sum(), # total on the board
                         "player_energy"         : player_energy, # how much you have in the bank
                         "rounds_left"           : rounds_left,
                         "board_size"            : board_size,
@@ -136,3 +137,42 @@ def load_replay(file_name, player_id):
         parsed_frames.append(turn_results)
 
     return parsed_frames
+
+
+def load_observations(file_name, player_id):
+    # (string, string)
+    parsed_frames = load_replay(file_name, player_id)
+    observations = []
+    for frame_index, frame in enumerate(parsed_frames):
+        frame_obs = []
+        ship_locations = frame["friendly_ships"].nonzero() #array of x locs, array of y locs
+        num_ships = len(ship_locations[0])
+        
+        for ship_index in range(num_ships):
+            y = ship_locations[0][ship_index]
+            x = ship_locations[1][ship_index]
+            
+            ship_obs = np.zeros((7,64,64))
+            ship_action = 0
+            ship_reward = 0
+
+            ship_obs_index = 0
+
+            for key in frame.keys():
+                matrix = frame[key]
+                if not isinstance(matrix, np.ndarray):
+                    continue
+                ship_obs[ship_obs_index] = localize_matrix(matrix, 64,
+                                                                 y, x)
+                ship_obs_index += 1
+                
+            frame_obs.append( (tf.convert_to_tensor(ship_obs), ship_action,
+                               ship_reward) )
+        observations.append(frame_obs)
+
+    return observations
+
+if __name__ == "__main__":
+    # for debugging
+    obs = load_observations("replays/ex_replay_2.hlt", "0")
+
