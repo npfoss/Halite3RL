@@ -159,18 +159,21 @@ def load_observations(file_name, player_id):
             ship_reward = 0
 
             ship_obs_index = 0
+            keys_to_add = ["halite_map" , "friendly_ships" ,"friendly_ships_halite",
+                           "friendly_dropoffs" ,"enemy_ships" ,"enemy_ships_halite",
+                           "enemy_dropoffs" ]
 
-
-            for key in frame.keys():
+            for key in keys_to_add:
                 matrix = frame[key]
                 if not isinstance(matrix, np.ndarray):
                     continue
                 ship_obs[ship_obs_index] = localize_matrix(matrix, 64,
                                                                  y, x)
                 ship_obs_index += 1
-                
+            np.moveaxis(ship_obs, (0,1,2), (1,2,0))
             frame_obs.append( (tf.convert_to_tensor(ship_obs), ship_action,
                                ship_reward) )
+
 
         observations.append(frame_obs)
 
