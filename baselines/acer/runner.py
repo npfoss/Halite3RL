@@ -3,7 +3,7 @@ from baselines.common.runners import AbstractEnvRunner
 from baselines.common.vec_env.vec_frame_stack import VecFrameStack
 from gym import spaces
 import os
-from replay_parser import localize_matrix, load_replay
+from replay_parser import localize_matrix, load_replay, replay_to_enc_obs_n_stuff
 
 import subprocess
 import json
@@ -13,15 +13,16 @@ import tensorflow as tf
 
 class HaliteRunner:
 
-    def __init__(self, model):
+    def __init__(self, model, env):
         self.nact = 6
         self.nenv = 1
         self.nsteps = 501 # (max game len) *** MAY NEED TO VARY WITH GAME (?) buffer size affected by this...
         self.model = model
-        # self.batch_ob_shape = (nenv*(nsteps+1),) + env.observation_space.shape
+        self.batch_ob_shape = (self.nenv*(self.nsteps+1),) + env.observation_space.shape
 
         # self.obs_dtype = env.observation_space.dtype
         # self.ac_dtype = env.action_space.dtype
+        self.nbatch = self.nenv * self.nsteps
 
 
     def run(self):
@@ -43,6 +44,9 @@ class HaliteRunner:
         replay_file_name = j['replay']
 
         replay = load_replay(replay_file_name, player)
+
+        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay)
+        mb_obs = enc_obs_to_obs(enc_obs)
 
 
         # enc_obs = np.split(self.obs, self.nstack, axis=3)  # so now list of obs steps
@@ -80,9 +84,6 @@ class HaliteRunner:
 
         # shapes are now [nenv, nsteps, []]
         # When pulling from buffer, arrays will now be reshaped in place, preventing a deep copy.
-
-        # *** SET THIS TO THE RIGHT NUMBER ***
-        self.nbatch = nenv * nsteps
 
         return enc_obs, mb_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks
 

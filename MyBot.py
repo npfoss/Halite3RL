@@ -19,8 +19,26 @@ import random
 import logging
 import numpy as np
 import tensorflow as tf
-#from tensorflow import keras
 
+import os
+import sys
+f = open(os.devnull, 'w')
+oldstdout = sys.stdout
+sys.stdout = f
+
+from baselines.acer.acer import Model
+from baselines.common.tf_util import load_variables
+import dill as pkl
+
+with open("params.pkl", "rb") as f:
+    params = pkl.load(f)
+    model = Model(**params)
+load_variables("actor.ckpt")
+
+f.close()
+sys.stdout = oldstdout
+
+from replay_parser import localize_matrix
 
 """ <<<Game Begin>>> """
 
@@ -41,16 +59,6 @@ board_length = game.game_map.width
 #with open("weights") as f:
 #    model = pkl.load(f)
 
-from baselines.acer.acer import Model
-from baselines.common.tf_util import load_variables
-import dill as pkl
-
-with open("params.pkl", "rb") as f:
-    params = pkl.load()
-    model = Model(**params)
-load_variables("actor.ckpt")
-
-
 """ <<<Game Loop>>> """
 
 while True:
@@ -68,24 +76,37 @@ while True:
     logging.info(str(np.nonzero(friendly_ships_halite)))
 
 
-
-
     # A command queue holds all the commands you will run this turn. You build this list up and submit it at the
     #   end of the turn.
     command_queue = []
 
-    for ship in me.get_ships():
+    # halite_exp = np.expand_dims(halite, axis=1)
 
-        # For each of your ships, move randomly if the ship is on a low halite location or the ship is full.
-        #   Else, collect halite.
-        if model.predict_classes([[halite]])[0] < 4 and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
-            #actions, mus, states = model._step(self.obs, S=self.states, M=self.dones)
+    for ship in me.get_ships():
+        obs = localize_matrix(halite, 64, ship.position.y, ship.position.x)
+        obs = np.repeat(obs, 7, axis=2)
+        # print(halite.shape, obs.shape) # spoiler it's (32, 32, 1) (64, 64, 7)
+
+        actions, mus, _ = model._step(obs)#, M=self.dones)
+        # print('actions:', actions,\
+        #         '\nmus:', mus,\
+        #         '\nstates:', states)
+        ## spoilers:
+        ## actions: [1] 
+        ## mus: [[0.16987674 0.16746981 0.15873784 0.16824721 0.168809   0.16685943]] 
+        ## states: []
+        action = actions[0]
+        if action < 4:# and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
             command_queue.append(
                 ship.move(
-                    [ Direction.North, Direction.South, Direction.East, Direction.West][actions[0]]))
-                    # random.choice([ Direction.North, Direction.South, Direction.East, Direction.West ])))
-        else:
+                    [Direction.North, Direction.South, Direction.East, Direction.West][action]))
+        elif action == 4:
             command_queue.append(ship.stay_still())
+        elif ship.halite_amount + game_map[ship.position].halite_amount + me.halite_amount >= 4000\
+                and not game_map[ship.position].has_structure:
+            # have to check because it crashes otherwise
+            command_queue.append(ship.make_dropoff())
+            me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
 
     # If the game is in the first 200 turns and you have enough halite, spawn a ship.
     # Don't spawn a ship if you currently have a ship at port, though - the ships will collide.

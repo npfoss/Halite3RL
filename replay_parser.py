@@ -140,9 +140,13 @@ def load_replay(file_name, player_id):
     return parsed_frames
 
 
-def load_observations(file_name, player_id):
-    # (string, string)
-    parsed_frames = load_replay(file_name, player_id)
+def replay_to_enc_obs_n_stuff(parsed_frames):
+    """ converts output of load_replay to the format we store things in the buffer.
+
+        right now, that's one giant string of observations+stuff, for each ship's
+        journey through the game one after the other.
+        (trace ends upon death, with reward on last frame taking into account the rest of the game)    
+    """
     observations = []
     for frame_index, frame in enumerate(parsed_frames):
         frame_obs = []
@@ -176,16 +180,9 @@ def load_observations(file_name, player_id):
 
         observations.append(frame_obs)
 
+    # embed()
+
     return observations
-
-def replay_to_enc_obs(replay):
-    """ converts output of load_replay to the format we store things in the buffer.
-
-        right now, that's one giant string of observations+stuff, for each ship's
-        journey through the game one after the other.
-        (trace ends upon death, with reward on last frame taking into account the rest of the game)    
-    """
-    ...
 
 def enc_obs_to_obs(enc_obs):
     """ takes the encoded observations (output of replay_to_enc_obs) 
@@ -197,12 +194,14 @@ def enc_obs_to_obs(enc_obs):
 
     may be shaped funny to pretend there are multiple envs?
 
-    TODO: also randomizes the orientation since there's symmetry and stuff
+    TODO: also randomizes the orientation since there's symmetry and stuff.
+        jk this is nontrivial, do it later. and don't forget about the actions
     """
-    ...
+    return enc_obs
 
 
 
 if __name__ == "__main__":
     # for debugging
-    obs = load_observations("replays/ex_replay_2.hlt", "0")
+    # obs = load_observations("replays/ex_replay_2.hlt", "0")
+    ...
