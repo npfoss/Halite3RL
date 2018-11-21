@@ -81,7 +81,7 @@ while True:
 
     for ship in me.get_ships():
         state = {'halite_map': halite}
-        obs = gen_obs(state, ship) # (64,64,7)
+        obs = gen_obs(state, {'x': ship.position.x, 'y': ship.position.y}) # (64,64,7)
         # print(halite.shape, obs.shape) # spoiler it's (32, 32, 1) (64, 64, 7)
 
         actions, mus, _ = model._step(obs)#, M=self.dones)

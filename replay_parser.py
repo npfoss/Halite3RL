@@ -152,12 +152,17 @@ def replay_to_enc_obs_n_stuff(parsed_frames):
     """
     ...
 
-def gen_obs(state, ship):
+    # this will do something which looks like:
+    t = 3 # random. chosen by fair die
+    ship_pos = {'x': 4, 'y': 2} # also random
+    enc_obs = gen_obs(parsed_frames[t], ship_pos)
+
+def gen_obs(state, ship_pos):
     """
     takes in the state (in replay-generated json format but also from the game)
     returns (64, 64, 7) tensor a la halite_env.py observation_space
     """
-    obs = localize_matrix(state['halite_map'], 64, ship.position.y, ship.position.x)
+    obs = localize_matrix(state['halite_map'], 64, ship_pos['y'], ship_pos['x'])
     obs = np.repeat(obs, 7, axis=2)
 
     return obs
