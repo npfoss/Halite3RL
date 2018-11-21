@@ -178,16 +178,30 @@ def load_observations(file_name, player_id):
 
     return observations
 
-def decode_obs(enc_obs):
-    """ takes the encoded observations (output of load_replay) 
-        (because that's a way more efficient way to store them)
+def replay_to_enc_obs(replay):
+    """ converts output of load_replay to the format we store things in the buffer.
+
+        right now, that's one giant string of observations+stuff, for each ship's
+        journey through the game one after the other.
+        (trace ends upon death, with reward on last frame taking into account the rest of the game)    
+    """
+    ...
+
+def enc_obs_to_obs(enc_obs):
+    """ takes the encoded observations (output of replay_to_enc_obs) 
 
     Returns:
         list of observations in the form you would input them to the model
-        list of actions corresponding to those observation
+        list of actions corresponding to those observations
         list of rewards earned by taking those actions
+
+    may be shaped funny to pretend there are multiple envs?
+
+    TODO: also randomizes the orientation since there's symmetry and stuff
     """
     ...
+
+
 
 if __name__ == "__main__":
     # for debugging
