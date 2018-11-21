@@ -3,7 +3,7 @@ import numpy as np
 
 class HaliteEnv:
     def __init__(self):
-        self.num_envs = 1
+        self.num_envs = 2
 
         lows = np.zeros(7)
         highs = np.array([np.inf, # halite

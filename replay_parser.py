@@ -178,6 +178,17 @@ def load_observations(file_name, player_id):
 
     return observations
 
+def decode_obs(enc_obs):
+    """ takes the encoded observations (output of load_replay) 
+        (because that's a way more efficient way to store them)
+
+    Returns:
+        list of observations in the form you would input them to the model
+        list of actions corresponding to those observation
+        list of rewards earned by taking those actions
+    """
+    ...
+
 if __name__ == "__main__":
     # for debugging
     obs = load_observations("replays/ex_replay_2.hlt", "0")

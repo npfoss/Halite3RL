@@ -72,6 +72,9 @@ class HaliteRunner:
 
         mb_dones = np.asarray(mb_dones, dtype=np.bool).swapaxes(1, 0)
 
+        # done is True on the last frame of a game
+        # (THIS IS THE IMPORTANT ONE TO GET RIGHT)
+        # mask is True on the first frame of a game (generated from dones)
         mb_masks = mb_dones # Used for statefull models like LSTM's to mask state when done
         mb_dones = mb_dones[:, 1:] # Used for calculating returns. The dones array is now aligned with rewards
 
