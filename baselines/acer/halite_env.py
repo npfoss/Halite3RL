@@ -20,7 +20,7 @@ class HaliteEnv:
 
         self.action_space = spaces.Discrete(6)
 
-        self.nstack = 1 # this is the number of timesteps to stack into one "observation"
+        self.nstack = 7 # this is the number of timesteps to stack into one "observation"
                         # (the Atari models all take the last 4 frames (greyscale) as input to the network)
                         # NOT IMPLEMENTED for > 1
 

@@ -347,8 +347,8 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
     print(locals())
     set_global_seeds(seed)
     env = HaliteEnv()
-    if not isinstance(env, VecFrameStack):
-        env = VecFrameStack(env, env.nstack)
+    # if not isinstance(env, VecFrameStack):
+        # env = VecFrameStack(env, env.nstack)
 
     # network = 'halite_net' # not yet, for now let's prented the halite layer is the only input
     policy = build_policy(env, network, estimate_q=True, **network_kwargs)
