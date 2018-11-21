@@ -146,7 +146,26 @@ def replay_to_enc_obs_n_stuff(parsed_frames):
         right now, that's one giant string of observations+stuff, for each ship's
         journey through the game one after the other.
         (trace ends upon death, with reward on last frame taking into account the rest of the game)    
+
+    used like this:
+        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay)
     """
+    ...
+
+def gen_obs(state, ship):
+    """
+    takes in the state (in replay-generated json format but also from the game)
+    returns (64, 64, 7) tensor a la halite_env.py observation_space
+    """
+    obs = localize_matrix(state['halite_map'], 64, ship.position.y, ship.position.x)
+    obs = np.repeat(obs, 7, axis=2)
+
+    return obs
+    # TODO: don't do that, delete it, it's wrong. modify below to do the right thing
+    # TODO: also divide all halite amounts by 1000 because normalization?
+
+    parsed_frames = state
+
     observations = []
     for frame_index, frame in enumerate(parsed_frames):
         frame_obs = []

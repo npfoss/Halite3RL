@@ -38,7 +38,7 @@ load_variables("actor.ckpt")
 f.close()
 sys.stdout = oldstdout
 
-from replay_parser import localize_matrix
+from replay_parser import localize_matrix, gen_obs
 
 """ <<<Game Begin>>> """
 
@@ -80,8 +80,8 @@ while True:
     # halite_exp = np.expand_dims(halite, axis=1)
 
     for ship in me.get_ships():
-        obs = localize_matrix(halite, 64, ship.position.y, ship.position.x)
-        obs = np.repeat(obs, 7, axis=2) # TODO: actually do the input
+        state = {'halite_map': halite}
+        obs = gen_obs(state, ship) # (64,64,7)
         # print(halite.shape, obs.shape) # spoiler it's (32, 32, 1) (64, 64, 7)
 
         actions, mus, _ = model._step(obs)#, M=self.dones)
