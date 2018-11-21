@@ -7,7 +7,7 @@ from replay_parser import localize_matrix, load_replay
 
 import subprocess
 import json
-import pickle as pkl
+import tensorflow as tf
 
 # from IPython import embed
 
@@ -31,9 +31,9 @@ class HaliteRunner:
         num_players = 2# if (np.random.random() < 0.5) else 4
 
         # pickle the model
-        with open("weights", "w+") as f:
-            #pkl.dump(self.model, f)
-            pass
+        self.model.save("actor.ckpt")
+        #with open("weights", "wb+") as f:
+        #    pkl.dump(self.model._step, f)
 
         o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
         j = json.loads(o.decode("utf-8"))

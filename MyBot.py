@@ -18,7 +18,7 @@ import random
 #   (print statements) are reserved for the engine-bot communication.
 import logging
 import numpy as np
-#import tensorflow as tf
+import tensorflow as tf
 #from tensorflow import keras
 
 
@@ -37,9 +37,18 @@ logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
 board_length = game.game_map.width
 
 
+#sess = tf.Session()
+#with open("weights") as f:
+#    model = pkl.load(f)
 
-with open("weights") as f:
-    model = pkl.load(f)
+from baselines.acer.acer import Model
+from baselines.common.tf_util import load_variables
+import dill as pkl
+
+with open("params.pkl", "rb") as f:
+    params = pkl.load()
+    model = Model(**params)
+load_variables("actor.ckpt")
 
 
 """ <<<Game Loop>>> """
@@ -70,7 +79,7 @@ while True:
         # For each of your ships, move randomly if the ship is on a low halite location or the ship is full.
         #   Else, collect halite.
         if model.predict_classes([[halite]])[0] < 4 and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
-            actions, mus, states = self.model._step(self.obs, S=self.states, M=self.dones)
+            #actions, mus, states = model._step(self.obs, S=self.states, M=self.dones)
             command_queue.append(
                 ship.move(
                     [ Direction.North, Direction.South, Direction.East, Direction.West][actions[0]]))

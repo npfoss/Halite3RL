@@ -18,6 +18,8 @@ from baselines.acer.buffer import Buffer
 from baselines.acer.runner import HaliteRunner
 from baselines.acer.halite_env import HaliteEnv
 
+import dill as pkl
+
 # remove last step
 def strip(var, nenvs, nsteps, flat = False):
     vars = batch_to_seq(var, nenvs, nsteps + 1, flat)
@@ -356,11 +358,15 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
     ob_space = env.observation_space
     ac_space = env.action_space
 
-    model = Model(policy=policy, ob_space=ob_space, ac_space=ac_space, nenvs=nenvs, nsteps=nsteps,
-                  ent_coef=ent_coef, q_coef=q_coef, gamma=gamma,
-                  max_grad_norm=max_grad_norm, lr=lr, rprop_alpha=rprop_alpha, rprop_epsilon=rprop_epsilon,
-                  total_timesteps=total_timesteps, lrschedule=lrschedule, c=c,
-                  trust_region=trust_region, alpha=alpha, delta=delta)
+    nstack = env.nstack
+    model_params = {"policy": policy, "ob_space": ob_space, "ac_space": ac_space, "nenvs": nenvs, "nsteps": nsteps,
+                    "ent_coef": ent_coef, "q_coef": q_coef, "gamma": gamma,
+                    "max_grad_norm": max_grad_norm, "lr": lr, "rprop_alpha": rprop_alpha, "rprop_epsilon": rprop_epsilon,
+                    "total_timesteps": total_timesteps, "lrschedule": lrschedule, "c": c,
+                    "trust_region": trust_region, "alpha": alpha, "delta":delta}
+    with open("params.pkl", "wb") as f:
+        pkl.dump(model_params, f)
+    model = Model(**model_params)
 
     runner = HaliteRunner(model=model)
     if replay_ratio > 0:
