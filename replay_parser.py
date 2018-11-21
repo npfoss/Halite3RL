@@ -180,8 +180,6 @@ def replay_to_enc_obs_n_stuff(parsed_frames):
 
         observations.append(frame_obs)
 
-    # embed()
-
     return observations
 
 def enc_obs_to_obs(enc_obs):

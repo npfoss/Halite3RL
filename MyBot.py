@@ -72,9 +72,6 @@ while True:
     rounds_left = constants.MAX_TURNS - game.turn_number
     halite = np.array([[[game_map[Position(x,y)].halite_amount] for x in range(board_length)] for y in range(board_length)])
     friendly_ships_halite = np.array([[game_map[Position(x,y)].structure_type for x in range(board_length)] for y in range(board_length)])
-    #np.set_printoptions(threshold='nan')
-    logging.info(str(np.nonzero(friendly_ships_halite)))
-
 
     # A command queue holds all the commands you will run this turn. You build this list up and submit it at the
     #   end of the turn.
@@ -84,7 +81,7 @@ while True:
 
     for ship in me.get_ships():
         obs = localize_matrix(halite, 64, ship.position.y, ship.position.x)
-        obs = np.repeat(obs, 7, axis=2)
+        obs = np.repeat(obs, 7, axis=2) # TODO: actually do the input
         # print(halite.shape, obs.shape) # spoiler it's (32, 32, 1) (64, 64, 7)
 
         actions, mus, _ = model._step(obs)#, M=self.dones)
@@ -95,6 +92,7 @@ while True:
         ## actions: [1] 
         ## mus: [[0.16987674 0.16746981 0.15873784 0.16824721 0.168809   0.16685943]] 
         ## states: []
+        # TODO: save mus (could just use log file!)
         action = actions[0]
         if action < 4:# and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
             command_queue.append(
@@ -108,10 +106,14 @@ while True:
             command_queue.append(ship.make_dropoff())
             me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
 
+
+    # **** SPAWN RULE STUFF **** 
     # If the game is in the first 200 turns and you have enough halite, spawn a ship.
     # Don't spawn a ship if you currently have a ship at port, though - the ships will collide.
     if game.turn_number <= 200 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied:
         command_queue.append(me.shipyard.spawn())
+
+
 
     # Send your moves back to the game environment, ending this turn.
     game.end_turn(command_queue)
