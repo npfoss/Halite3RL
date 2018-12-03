@@ -68,10 +68,13 @@ def load_replay(file_name, player_id):
         old_enemy_dropoffs = np.copy(enemy_dropoffs)
         ship_info = {}
         # move info keyed by ship id
-        moves = {str(d['id']): d for d in frame['moves'][player_id] if 'id' in d} if player_id in frame['moves'] else {}
+        # NOTE: moves are what happened LAST FRAME (so do t+1 for moves this frame)
+        # 99% confident in this, seriously
+        moves = ({str(d['id']): d for d in data['full_frames'][t+1]['moves'][player_id] if 'id' in d} if player_id in data['full_frames'][t+1]['moves'] else {})\
+                    if t < actual_turns-1 else {}
 
         rounds_left = max_turns - t
-        player_energy = frame['energy'][player_id]
+        player_energy = frame['energy'][player_id] # energy at BEGINNING of frame
         energy_delta = 0 if t > actual_turns-2 else data['full_frames'][t+1]['energy'][player_id] - player_energy
 
         for changed_cell in frame['cells']: # update halite 
