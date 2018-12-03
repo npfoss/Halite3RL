@@ -41,6 +41,7 @@ class Buffer(object):
         # dones has shape [nenvs, nsteps]
         # returns stacked obs of shape [nenv, (nsteps + 1), nh, nw, nstack*nc]
 
+        return enc_obs
         return _stack_obs(enc_obs, dones,
                           nsteps=self.nsteps)
 
@@ -49,29 +50,44 @@ class Buffer(object):
         # actions, rewards, dones [nenv, nsteps]
         # mus [nenv, nsteps, nact]
 
+        """ NEW BUFFER stuff:
+            
+            enc_obs: long concatenated list of ship traces for a single game (?, 64, 64, 7)
+            same for the other things
+
+            still stored in rows so we can sample uniformly from games, then from that game
+        """
+
         if self.enc_obs is None:
-            self.enc_obs = np.empty([self.size] + list(enc_obs.shape), dtype=self.obs_dtype)
-            self.actions = np.empty([self.size] + list(actions.shape), dtype=self.ac_dtype)
-            self.rewards = np.empty([self.size] + list(rewards.shape), dtype=np.float32)
-            self.mus = np.empty([self.size] + list(mus.shape), dtype=np.float32)
-            self.dones = np.empty([self.size] + list(dones.shape), dtype=np.bool)
-            self.masks = np.empty([self.size] + list(masks.shape), dtype=np.bool)
+            self.enc_obs = [None] * self.size
+            self.actions = [None] * self.size
+            self.rewards = [None] * self.size
+            self.mus = [None] * self.size
+            self.dones = [None] * self.size
+            # self.masks = [None] * self.size
+            # self.enc_obs = np.empty([self.size] + list(enc_obs.shape), dtype=self.obs_dtype)
+            # self.actions = np.empty([self.size] + list(actions.shape), dtype=self.ac_dtype)
+            # self.rewards = np.empty([self.size] + list(rewards.shape), dtype=np.float32)
+            # self.mus = np.empty([self.size] + list(mus.shape), dtype=np.float32)
+            # self.dones = np.empty([self.size] + list(dones.shape), dtype=np.bool)
+            # self.masks = np.empty([self.size] + list(masks.shape), dtype=np.bool)
 
         self.enc_obs[self.next_idx] = enc_obs
         self.actions[self.next_idx] = actions
         self.rewards[self.next_idx] = rewards
         self.mus[self.next_idx] = mus
         self.dones[self.next_idx] = dones
-        self.masks[self.next_idx] = masks
+        # self.masks[self.next_idx] = masks
 
         self.next_idx = (self.next_idx + 1) % self.size
         self.num_in_buffer = min(self.size, self.num_in_buffer + 1)
 
-    def take(self, x, idx, envx):
+    def take(self, x, idx, where_to_sample):
         nenv = self.nenv
-        out = np.empty([nenv] + list(x.shape[2:]), dtype=x.dtype)
+        out = np.empty([nenv] + [self.nsteps] + list(x.shape[3:]), dtype=x.dtype)
         for i in range(nenv):
-            out[i] = x[idx[i], envx[i]]
+            # annoying: sometimes have to wrap around. and add some from the beginning of x to the end of out
+            out[i] = x[idx[i]].take(np.arange(where_to_sample[i], where_to_sample[i] + self.nsteps), mode='wrap', axis=0)
         return out
 
     def get(self):
@@ -79,21 +95,28 @@ class Buffer(object):
         # obs [nenv, (nsteps + 1), nh, nw, nstack*nc]
         # actions, rewards, dones [nenv, nsteps]
         # mus [nenv, nsteps, nact]
-        nenv = self.nenv
+        # ^ no longer true: see NEW BUFFER comment above
+
+        nenv = self.nenv # remember, nenv is number of uncorrelated samples to take --Nate
         assert self.can_sample()
 
         # Sample exactly one id per env. If you sample across envs, then higher correlation in samples from same env.
         idx = np.random.randint(0, self.num_in_buffer, nenv)
-        envx = np.arange(nenv)
 
-        take = lambda x: self.take(x, idx, envx)  # for i in range(nenv)], axis = 0)
+        # get which self.nsteps long chunk to take from the chosen games
+        #   it's not important that it uses dones, they're all the same length
+        where_to_sample = np.array([np.random.randint(0, self.dones[i].shape[0]) for i in idx])
+
+        take = lambda x: self.take(x, idx, where_to_sample)  # for i in range(nenv)], axis = 0)
         dones = take(self.dones)
         enc_obs = take(self.enc_obs)
         obs = self.decode(enc_obs, dones)
         actions = take(self.actions)
         rewards = take(self.rewards)
         mus = take(self.mus)
-        masks = take(self.masks)
+        # masks = take(self.masks)
+        # masks = np.array([[False]*self.nsteps for i in range(nenvs)])
+        masks = None
         return obs, actions, rewards, mus, dones, masks
 
 

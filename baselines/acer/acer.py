@@ -243,12 +243,14 @@ class Acer():
         runner, model, buffer, steps = self.runner, self.model, self.buffer, self.steps
         if on_policy:
             enc_obs, obs, actions, rewards, mus, dones, masks = runner.run()
-            self.episode_stats.feed(rewards, dones)
+            # self.episode_stats.feed(rewards, dones)
             if buffer is not None:
                 buffer.put(enc_obs, actions, rewards, mus, dones, masks)
         else:
             # get obs, actions, rewards, mus, dones from buffer.
             obs, actions, rewards, mus, dones, masks = buffer.get()
+
+        masks = np.zeros(dones.shape) # they probably don't matter except for LSTMs
 
 
         # reshape stuff correctly
@@ -345,7 +347,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
 
     print("Running Acer Simple")
 
-    nsteps = 500
+    # nsteps = 500
     print(locals())
     set_global_seeds(seed)
     env = HaliteEnv()
@@ -368,7 +370,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
         pkl.dump(model_params, f)
     model = Model(**model_params)
 
-    runner = HaliteRunner(model=model, env=env, gamma=gamma)
+    runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
     if replay_ratio > 0:
         buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size)
     else:

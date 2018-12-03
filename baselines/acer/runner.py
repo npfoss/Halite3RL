@@ -3,7 +3,7 @@ from baselines.common.runners import AbstractEnvRunner
 from baselines.common.vec_env.vec_frame_stack import VecFrameStack
 from gym import spaces
 import os
-from replay_parser import localize_matrix, load_replay, replay_to_enc_obs_n_stuff
+from replay_parser import localize_matrix, load_replay, replay_to_enc_obs_n_stuff, enc_obs_to_obs
 
 import subprocess
 import json
@@ -13,10 +13,10 @@ import tensorflow as tf
 
 class HaliteRunner:
 
-    def __init__(self, model, env, gamma):
+    def __init__(self, model, env, gamma, nsteps):
         self.nact = 6
         self.nenv = 1
-        self.nsteps = 501 # (max game len) *** MAY NEED TO VARY WITH GAME (?) buffer size affected by this...
+        self.nsteps = nsteps
         self.model = model
         self.batch_ob_shape = (self.nenv*(self.nsteps+1),) + env.observation_space.shape
 
@@ -37,16 +37,19 @@ class HaliteRunner:
         #with open("weights", "wb+") as f:
         #    pkl.dump(self.model._step, f)
 
-        o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
-        j = json.loads(o.decode("utf-8"))
+        if False: # doing it for real
+            o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
+            j = json.loads(o.decode("utf-8"))
 
-        #next, parse the replay and take all the credit
+            #next, parse the replay and take all the credit
+            replay_file_name = j['replay']
         player = np.random.randint(0, num_players-1)
-        replay_file_name = j['replay']
+        # FAKE just read old replay
+        replay_file_name = 'replays/replay-20181203-162023-0500-1543872008-32-32.hlt'
 
         replay = load_replay(replay_file_name, player)
 
-        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay)
+        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay, gamma=self.gamma)
         mb_obs = enc_obs_to_obs(enc_obs)
 
 

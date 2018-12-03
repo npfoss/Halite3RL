@@ -118,11 +118,13 @@ def load_replay(file_name, player_id):
                 if (player == player_id): # friendly 
                     ship_info[entity_id] = {'pos': {'x': x, 'y': y}}
                     ship_info[entity_id]['energy'] = energy
+                    ship_info[entity_id]['energy_delta'] = -energy # will be overridden once we know what actually happened
                     # note: create supply depot move looks like this: {'id': 5, 'type': 'c'}
                     ship_info[entity_id]['action'] = 'o' if not entity_id in moves else \
                             moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
                     friendly_ships[y][x] = 1
                     friendly_ships_halite[y][x] = energy
+                    ship_info[entity_id]['mus'] = 1.0
                 else: # enemy 
                     enemy_ships[y][x] = 1
                     enemy_ships_halite[y][x] = energy 
@@ -131,7 +133,7 @@ def load_replay(file_name, player_id):
             # compute ship halite deltas for previous turn
             for idee in parsed_frames[t-1]['ship_info']:
                 parsed_frames[t-1]['ship_info'][idee]['energy_delta'] = \
-                                  ship_info[idee]['energy'] if idee in ship_info else 0 \
+                                  (ship_info[idee]['energy'] if idee in ship_info else 0) \
                                 - parsed_frames[t-1]['ship_info'][idee]['energy']
 
         for event in frame['events']: # update dropoffs 
@@ -166,6 +168,7 @@ def load_replay(file_name, player_id):
                        }
 
         parsed_frames.append(turn_results)
+
     parsed_frames = parsed_frames[1:]
     return parsed_frames
 
@@ -191,12 +194,16 @@ def replay_to_enc_obs_n_stuff(parsed_frames, gamma):
                 "rewards": gen_rewards(frame, ship_info),
                 "mus": ship_info["mus"],
                 "dones": False,
-                "masks": False, # probably only matters for LSTMs, so... eh
+                # "masks": False, # probably only matters for LSTMs, so... eh.
+                    # if you ever want to use masks, save them in the buffer too
             })
     for ship in traces.values():
         ship[-1]["dones"] = True
-    return_order = ["obs", "actions", "rewards", "mus", "dones", "masks"]
-    return [sum(([frame[key] for frame in ship] for ship in traces.values()), []) for key in return_order]
+    return_order = ["obs", "actions", "rewards", "mus", "dones",]# "masks"]
+    print("in replay_to_enc_obs_n_stuff")
+    a = [np.array(sum(([frame[key] for frame in ship] for ship in traces.values()), [])) for key in return_order] + [None]
+    # from IPython import embed; embed()
+    return [np.array(sum(([frame[key] for frame in ship] for ship in traces.values()), [])) for key in return_order] + [None] #masks
 
 def gen_rewards(state, ship_info):
     # magic numbers
