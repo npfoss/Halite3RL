@@ -368,7 +368,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
         pkl.dump(model_params, f)
     model = Model(**model_params)
 
-    runner = HaliteRunner(model=model, env=env)
+    runner = HaliteRunner(model=model, env=env, gamma=gamma)
     if replay_ratio > 0:
         buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size)
     else:

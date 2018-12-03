@@ -74,6 +74,27 @@ def load_replay(file_name, player_id):
         moves = ({str(d['id']): d for d in data['full_frames'][t+1]['moves'][player_id] if 'id' in d} if player_id in data['full_frames'][t+1]['moves'] else {})\
                     if t < actual_turns-1 else {}
 
+        """
+        
+        Note to Nate and Kent:
+
+        don't give a fuck about masks
+
+        buffer is going to be flat, don't forget to grab one extra obs at the end when sampling
+
+        it's ok that the obs after a ship dies is unrelated, next obs only matters when done == False (probably)
+
+        don't aggregate retrace at the end yet because we think it ignores cutoffs and that's hard ?
+
+        everything seems shifted one timestep in the replay. ship as entity shows up on the same frame its move shows up in
+            and we moved the moves so ...? figure out what to do about this Monday December 3rd 2018
+
+
+
+        """
+
+
+
         rounds_left = max_turns - t
         player_energy = frame['energy'][player_id] # energy at BEGINNING of frame
         energy_delta = 0 if t > actual_turns - 2 else data['full_frames'][t + 1]['energy'][player_id] - player_energy
