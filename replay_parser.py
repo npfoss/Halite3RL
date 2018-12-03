@@ -79,13 +79,11 @@ def load_replay(file_name, player_id):
         old_enemy_dropoffs = np.copy(enemy_dropoffs)
         ship_info = {}
         # move info keyed by ship id
-        # NOTE: moves are what happened LAST FRAME (so do t+1 for moves this frame)
-        # 99% confident in this, seriously
-        moves = {str(d['id']): d for d in data['full_frames'][t]['moves'][player_id] if 'id' in d} if player_id in data['full_frames'][t]['moves'] else {}
+        moves = {str(d['id']): d for d in data['full_frames'][t]['moves'][player_id] if 'id' in d} \
+                    if player_id in data['full_frames'][t]['moves'] else {}
 
-        """
-        
-        Note to Nate and Kent:
+
+        """ Note to Nate and Kent:
 
         don't give a fuck about masks
 
@@ -97,15 +95,12 @@ def load_replay(file_name, player_id):
 
         everything seems shifted one timestep in the replay. ship as entity shows up on the same frame its move shows up in
             and we moved the moves so ...? figure out what to do about this Monday December 3rd 2018
-
-
-
         """
 
 
 
         rounds_left = max_turns - t
-        player_energy = data['full_frames'][t-1]['energy'][player_id] if t>0 else 5000 # energy at END of frame
+        player_energy = data['full_frames'][t-1]['energy'][player_id] if t > 0 else 5000 # energy at END of frame
         energy_delta = frame['energy'][player_id] - player_energy
 
         for changed_cell in frame['cells']: # update halite 
