@@ -13,7 +13,7 @@ import tensorflow as tf
 
 class HaliteRunner:
 
-    def __init__(self, model, env):
+    def __init__(self, model, env, gamma):
         self.nact = 6
         self.nenv = 1
         self.nsteps = 501 # (max game len) *** MAY NEED TO VARY WITH GAME (?) buffer size affected by this...
@@ -23,6 +23,7 @@ class HaliteRunner:
         # self.obs_dtype = env.observation_space.dtype
         # self.ac_dtype = env.action_space.dtype
         self.nbatch = self.nenv * self.nsteps
+        self.gamma = gamma
 
 
     def run(self):

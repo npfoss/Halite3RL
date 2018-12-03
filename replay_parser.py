@@ -23,6 +23,7 @@ def localize_matrix(m, new_length, old_center_y, old_center_x):
     return centered_m 
 
 def load_replay(file_name, player_id):
+    # TODO: also read in mus
     player_id = str(player_id)
     parsed_frames = []
     with open(file_name, 'rb') as f:
@@ -75,7 +76,7 @@ def load_replay(file_name, player_id):
 
         rounds_left = max_turns - t
         player_energy = frame['energy'][player_id] # energy at BEGINNING of frame
-        energy_delta = 0 if t > actual_turns-2 else data['full_frames'][t+1]['energy'][player_id] - player_energy
+        energy_delta = 0 if t > actual_turns - 2 else data['full_frames'][t + 1]['energy'][player_id] - player_energy
 
         for changed_cell in frame['cells']: # update halite 
             x = changed_cell['x']
@@ -135,7 +136,7 @@ def load_replay(file_name, player_id):
                         "board_size"            : board_size,
                         "energy_delta"          : energy_delta,
                         # ** AUGMENTED WITH DELTA RETROACTIVELY
-                        "ship_info"             : ship_info, # dictionary keyed by ship_id, contains (x,y) pos, energy, energy-delta, and action
+                        "ship_info"             : ship_info, # dictionary keyed by ship_id, contains (x,y) pos, energy, energy-delta, action and mu
                        }
 
         parsed_frames.append(turn_results)
@@ -143,7 +144,7 @@ def load_replay(file_name, player_id):
     return parsed_frames
 
 
-def replay_to_enc_obs_n_stuff(parsed_frames):
+def replay_to_enc_obs_n_stuff(parsed_frames, gamma):
     """ converts output of load_replay to the format we store things in the buffer.
 
         right now, that's one giant string of observations+stuff, for each ship's
@@ -153,12 +154,27 @@ def replay_to_enc_obs_n_stuff(parsed_frames):
     used like this:
         enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay)
     """
-    ...
+    traces = {} # obs, actions, rewards, mus, dones, masks for each ship keyed by id
+    for frame in parsed_frames:
+        for ship_id, ship_info in frame["ship_info"].items():
+            if ship_id not in traces:
+                traces[ship_id]=[]
+            traces[ship_id].append({
+                "obs": gen_obs(frame, ship_info["pos"]),
+                "actions": ship_info["action"],
+                "rewards": gen_rewards(frame, ship_info),
+                "mus": ship_info["mus"],
+                "dones": False,
+                "masks": False, # probably only matters for LSTMs, so... eh
+            })
+    for ship in traces.values():
+        ship[-1]["dones"] = True
+    return_order = ["obs", "actions", "rewards", "mus", "dones", "masks"]
+    return [sum(([frame[key] for frame in ship] for ship in traces.values()), []) for key in return_order]
 
-    # this will do something which looks like:
-    t = 3 # random. chosen by fair die
-    ship_pos = {'x': 4, 'y': 2} # also random
-    enc_obs = gen_obs(parsed_frames[t], ship_pos)
+def gen_rewards(state, ship_info):
+    # magic numbers
+    ship_pickup_multiplier = 0.25
 
 def gen_obs(state, ship_pos):
     """
