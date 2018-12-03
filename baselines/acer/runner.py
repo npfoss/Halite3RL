@@ -45,8 +45,6 @@ class HaliteRunner:
         replay_file_name = j['replay']
 
         replay = load_replay(replay_file_name, player)
-        # from IPython import embed
-        # embed()
 
         enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay)
         mb_obs = enc_obs_to_obs(enc_obs)
