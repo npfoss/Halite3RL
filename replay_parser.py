@@ -216,49 +216,17 @@ def gen_obs(state, ship_pos):
     takes in the state (in replay-generated json format but also from the game)
     returns (64, 64, 7) tensor a la halite_env.py observation_space
     """
-    obs = localize_matrix(state['halite_map'], 64, ship_pos['y'], ship_pos['x'])
-    obs = np.repeat(obs, 7, axis=2)
+    
 
-    return obs
-    # TODO: don't do that, delete it, it's wrong. modify below to do the right thing
-    # TODO: also divide all halite amounts by 1000 because normalization?
+    map_list = ['halite_map', 'friendly_ships', 'friendly_ships_halite', 'friendly_dropoffs',
+                    'enemy_ships', 'enemy_ships_halite', 'enemy_dropoffs']
+    map_tensor = np.zeros((7, 64, 64))
+    for index, feature in enumerate(map_list):
+        map_tensor[index] = localize_matrix(state[feature], 64, ship_pos['y'], ship_pos['x'])
+    map_tensor = np.moveaxis(map_tensor, 0, 2)
 
-    parsed_frames = state
+    return map_tensor
 
-    observations = []
-    for frame_index, frame in enumerate(parsed_frames):
-        frame_obs = []
-        ship_locations = frame["friendly_ships"].nonzero() #array of x locs, array of y locs
-
-        num_ships = len(ship_locations[0])
-        
-        for ship_index in range(num_ships):
-            y = ship_locations[0][ship_index]
-            x = ship_locations[1][ship_index]
-            
-            ship_obs = np.zeros((7,64,64))
-            ship_action = 0
-            ship_reward = 0
-
-            ship_obs_index = 0
-            keys_to_add = ["halite_map" , "friendly_ships" ,"friendly_ships_halite",
-                           "friendly_dropoffs" ,"enemy_ships" ,"enemy_ships_halite",
-                           "enemy_dropoffs" ]
-
-            for key in keys_to_add:
-                matrix = frame[key]
-                ship_obs[ship_obs_index] = localize_matrix(matrix, 64,
-                                                                 y, x)
-                ship_obs_index += 1
-                
-            ship_obs = np.swapaxes(ship_obs, 0,1)
-            ship_obs = np.swapaxes(ship_obs, 1, 2)
-            frame_obs.append( (tf.convert_to_tensor(ship_obs), ship_action,
-                               ship_reward) )
-
-        observations.append(frame_obs)
-
-    return observations
 
 def enc_obs_to_obs(enc_obs):
     """ takes the encoded observations (output of replay_to_enc_obs) 
@@ -280,4 +248,6 @@ def enc_obs_to_obs(enc_obs):
 if __name__ == "__main__":
     # for debugging
     obs = load_replay("replays/replay_nate.hlt", "0")
+    replay_to_enc_obs_n_stuff(obs, 0)
+    
     ...
