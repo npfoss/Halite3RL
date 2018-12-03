@@ -29,6 +29,16 @@ def load_replay(file_name, player_id):
     with open(file_name, 'rb') as f:
         data = json.loads(zstd.loads(f.read()).decode("utf-8"))
 
+    '''
+    Notes on replay format (keys of data['full_frames']):
+    entities: ships on the map at the BEGINNING of the frame
+    moves: moves taken by those entities THIS turn
+    events: events that happened THIS turn
+    cells: changes to cells THIS turn
+    deposited: total depositied for all of time as of END of this frame
+    energy: player energy at END of turn
+    '''
+
     # ***** Unchanging constants *****
     board_size = data['production_map']['width']
     max_turns = data['GAME_CONSTANTS']['MAX_TURNS']
