@@ -206,6 +206,15 @@ def replay_to_enc_obs_n_stuff(parsed_frames, gamma):
 def gen_rewards(state, ship_info):
     # magic numbers
     ship_pickup_multiplier = 0.25
+    # selfish right now
+    if ship_info["energy_delta"] == -ship_info["energy"]:
+        # dropped off all halite, potential drop off
+        initial_halite = state["halite_map"][ship_info["pos"]["y"]][ship_info["pos"]["x"]]
+        move_cost = round(0.1 * initial_halite)
+        dropped_off = ship_info["energy"] - move_cost
+    else:
+        dropped_off = 0
+    return ship_info["energy_delta"] * ship_pickup_multiplier + dropped_off * (1 - ship_pickup_multiplier)
 
 def gen_obs(state, ship_pos):
     """
