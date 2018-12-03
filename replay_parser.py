@@ -81,8 +81,7 @@ def load_replay(file_name, player_id):
         # move info keyed by ship id
         # NOTE: moves are what happened LAST FRAME (so do t+1 for moves this frame)
         # 99% confident in this, seriously
-        moves = ({str(d['id']): d for d in data['full_frames'][t+1]['moves'][player_id] if 'id' in d} if player_id in data['full_frames'][t+1]['moves'] else {})\
-                    if t < actual_turns-1 else {}
+        moves = {str(d['id']): d for d in data['full_frames'][t]['moves'][player_id] if 'id' in d} if player_id in data['full_frames'][t]['moves'] else {}
 
         """
         
@@ -106,8 +105,8 @@ def load_replay(file_name, player_id):
 
 
         rounds_left = max_turns - t
-        player_energy = frame['energy'][player_id] # energy at BEGINNING of frame
-        energy_delta = 0 if t > actual_turns - 2 else data['full_frames'][t + 1]['energy'][player_id] - player_energy
+        player_energy = data['full_frames'][t-1]['energy'][player_id] if t>0 else 5000 # energy at END of frame
+        energy_delta = frame['energy'][player_id] - player_energy
 
         for changed_cell in frame['cells']: # update halite 
             x = changed_cell['x']
@@ -154,24 +153,25 @@ def load_replay(file_name, player_id):
                                         # online thing.  Mine doesn't count onboard ship halite. 
 
         # remember that old mean "beginning of turn" aka current state during which actions were taken
-        turn_results = {"halite_map"            : old_halite,
-                        "friendly_ships"        : friendly_ships, # indicator variable
-                        "friendly_ships_halite" : friendly_ships_halite,
-                        "friendly_dropoffs"     : old_friendly_dropoffs, # indicator
-                        "enemy_ships"           : enemy_ships,
-                        "enemy_ships_halite"    : enemy_ships_halite,
-                        "enemy_dropoffs"        : old_enemy_dropoffs,
-                        "total_halite"          : old_halite.sum(), # total on the board
-                        "player_energy"         : player_energy, # how much you have in the bank
-                        "rounds_left"           : rounds_left,
-                        "board_size"            : board_size,
-                        "energy_delta"          : energy_delta,
+        turn_results = {"halite_map"            : old_halite,                               # beginning of turn
+                        "friendly_ships"        : friendly_ships, # indicator variable      # beginning of turn
+                        "friendly_ships_halite" : friendly_ships_halite,                    # beginning of turn
+                        "friendly_dropoffs"     : old_friendly_dropoffs, # indicator        # beginning of turn
+                        "enemy_ships"           : enemy_ships,                              # beginning of turn
+                        "enemy_ships_halite"    : enemy_ships_halite,                       # beginning of turn
+                        "enemy_dropoffs"        : old_enemy_dropoffs,                       # beginning of turn
+                        "total_halite"          : old_halite.sum(), # total on the board    # beginning of turn
+                        "player_energy"         : player_energy, # how much you have in the bank    # beginning of turn
+                        "rounds_left"           : rounds_left,                              # beginning of turn
+                        "board_size"            : board_size,                               
+                        "energy_delta"          : energy_delta,                             #ON THIS TURN **************
                         # ** AUGMENTED WITH DELTA RETROACTIVELY
                         "ship_info"             : ship_info, # dictionary keyed by ship_id, contains (x,y) pos, energy, energy-delta, action and mu
+                                                            #                                           Beg.    Beg.    on turn        on-turn      on-turn
                        }
 
         parsed_frames.append(turn_results)
-
+    parsed_frames = parsed_frames[1:]
     return parsed_frames
 
 
@@ -275,5 +275,5 @@ def enc_obs_to_obs(enc_obs):
 
 if __name__ == "__main__":
     # for debugging
-    # obs = load_observations("replays/ex_replay_2.hlt", "0")
+    obs = load_replay("replays/replay_nate.hlt", "0")
     ...
