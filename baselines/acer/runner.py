@@ -32,8 +32,8 @@ class HaliteRunner:
         enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = (None,)*6
         while enc_obs is None or len(enc_obs) < self.nsteps:
             #run a game.
-            size = 32# np.random.choice([32, 40, 48, 56, 64])
-            num_players = 2# if (np.random.random() < 0.5) else 4
+            size = np.random.choice([32, 40, 48, 56, 64])
+            num_players = 2 if (np.random.random() < 0.5) else 4
 
             # pickle the model
             self.model.save("actor.ckpt")
