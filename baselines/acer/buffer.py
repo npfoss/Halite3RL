@@ -84,7 +84,6 @@ class Buffer(object):
 
     def take(self, x, idx, where_to_sample, one_extra=False):
         nenv = self.nenv
-        # from IPython import embed; embed()
         out = np.empty([nenv] + [self.nsteps + one_extra] + list(x[0].shape[1:]), dtype=x[0].dtype)
         for i in range(nenv):
             # annoying: sometimes have to wrap around. and add some from the beginning of x to the end of out

@@ -171,7 +171,7 @@ def load_replay(file_name, player_id):
                        }
 
         parsed_frames.append(turn_results)
-        
+
     parsed_frames = parsed_frames[1:-1]
     return parsed_frames
 
@@ -203,8 +203,6 @@ def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
     for ship in traces.values():
         ship[-1]["dones"] = True
     return_order = ["obs", "actions", "rewards", "mus", "dones",]# "masks"]
-    a = [np.array(sum(([frame[key] for frame in ship] for ship in traces.values()), [])) for key in return_order] + [None]
-    # from IPython import embed; embed()
     return [np.array(sum(([frame[key] for frame in ship] for ship in traces.values()), [])) for key in return_order] + [None] #masks
 
 def read_mus(player_id):

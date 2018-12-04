@@ -222,8 +222,6 @@ class EpisodeStats:
         self.nenvs = nenvs
 
     def feed(self, rewards, masks):
-        # print('in utils, feed')
-        # from IPython import embed; embed()
         rewards = np.reshape(rewards, [self.nenvs, self.nsteps])
         masks = np.reshape(masks, [self.nenvs, self.nsteps])
         for i in range(0, self.nenvs):
