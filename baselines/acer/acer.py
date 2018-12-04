@@ -372,10 +372,13 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
                                     For instance, 'mlp' network architecture has arguments num_hidden and num_layers.
 
     '''
-
     print("Running Acer Simple")
 
-    # nsteps = 500
+    buffer_size = 4 # number of games (now that I've changed buffer.py)
+    replay_start = 4
+    replay_start = min(replay_start, buffer_size)
+    replay_ratio = 40
+
     print(locals())
 
     learn_params = {"network": network, "seed": seed, "nsteps": nsteps, "total_timesteps": total_timesteps, "q_coef": q_coef, "ent_coef": ent_coef,

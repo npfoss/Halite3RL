@@ -13,7 +13,7 @@ class Buffer(object):
         self.nstack = env.nstack
         self.nc //= self.nstack
         self.nbatch = self.nenv * self.nsteps
-        self.size = size // (self.nsteps)  # Each loc contains nenv * nsteps frames, thus total buffer is nenv * size frames
+        self.size = size# // (self.nsteps)  # Each loc contains nenv * nsteps frames, thus total buffer is nenv * size frames
 
         # Memory
         self.enc_obs = None
