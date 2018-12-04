@@ -70,7 +70,7 @@ def load_replay(file_name, player_id):
     for t in range(actual_turns):
         frame = data['full_frames'][t]
         frame_mus = [] if t == 0 else game_mus[t - 1] if t <= len(game_mus) else \
-			{j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
+            {j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
 
         # Generate matrices for this turn 
         old_halite = np.copy(halite)
