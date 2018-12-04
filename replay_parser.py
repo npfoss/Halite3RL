@@ -23,11 +23,12 @@ def localize_matrix(m, new_length, old_center_y, old_center_x):
     return centered_m 
 
 def load_replay(file_name, player_id):
-    # TODO: also read in mus
     player_id = str(player_id)
     parsed_frames = []
     with open(file_name, 'rb') as f:
         data = json.loads(zstd.loads(f.read()).decode("utf-8"))
+
+    game_mus = read_mus(player_id)
 
     '''
     Notes on replay format (keys of data['full_frames']):
@@ -68,6 +69,8 @@ def load_replay(file_name, player_id):
     # ***** Update for each frame ***** 
     for t in range(actual_turns):
         frame = data['full_frames'][t]
+        frame_mus = [] if t == 0 else game_mus[t - 1] if t <= len(game_mus) else \
+			{j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
 
         # Generate matrices for this turn 
         old_halite = np.copy(halite)
@@ -123,6 +126,7 @@ def load_replay(file_name, player_id):
                             moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
                     friendly_ships[y][x] = 1
                     friendly_ships_halite[y][x] = energy
+                    ship_info[entity_id]["mus"] = frame_mus[entity_id]
                 else: # enemy 
                     enemy_ships[y][x] = 1
                     enemy_ships_halite[y][x] = energy 
@@ -166,7 +170,7 @@ def load_replay(file_name, player_id):
                        }
 
         parsed_frames.append(turn_results)
-    parsed_frames = parsed_frames[1:]
+    parsed_frames = parsed_frames[1:-1]
     return parsed_frames
 
 
@@ -197,6 +201,15 @@ def replay_to_enc_obs_n_stuff(parsed_frames, gamma):
         ship[-1]["dones"] = True
     return_order = ["obs", "actions", "rewards", "mus", "dones", "masks"]
     return [sum(([frame[key] for frame in ship] for ship in traces.values()), []) for key in return_order]
+
+def read_mus(player_id):
+    mus = []
+    with open("bot-"+str(player_id)+".log") as f:
+        for line in f:
+            if "mu:" in line:
+                mu_str = line.split("mu:")[-1]
+                mus.append(json.loads(mu_str))
+    return mus
 
 def gen_rewards(state, ship_info):
     # magic numbers

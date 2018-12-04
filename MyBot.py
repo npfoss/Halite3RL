@@ -25,10 +25,12 @@ import sys
 f = open(os.devnull, 'w')
 oldstdout = sys.stdout
 sys.stdout = f
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from baselines.acer.acer import Model
 from baselines.common.tf_util import load_variables
 import dill as pkl
+import json
 
 with open("params.pkl", "rb") as f:
     params = pkl.load(f)
@@ -79,6 +81,7 @@ while True:
 
     # halite_exp = np.expand_dims(halite, axis=1)
 
+    frame_mus = {}
     for ship in me.get_ships():
         state = {'halite_map': halite}
         obs = gen_obs(state, {'x': ship.position.x, 'y': ship.position.y}) # (64,64,7)
@@ -93,6 +96,7 @@ while True:
         ## mus: [[0.16987674 0.16746981 0.15873784 0.16824721 0.168809   0.16685943]] 
         ## states: []
         # TODO: save mus (could just use log file!)
+        frame_mus[ship.id] = [float(mu) for mu in mus[0]]
         action = actions[0]
         if action < 4:# and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
             command_queue.append(
@@ -105,6 +109,7 @@ while True:
             # have to check because it crashes otherwise
             command_queue.append(ship.make_dropoff())
             me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
+    logging.info("mu:"+json.dumps(frame_mus))
 
 
     # **** SPAWN RULE STUFF **** 
