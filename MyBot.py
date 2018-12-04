@@ -19,14 +19,10 @@ from hlt import constants
 from hlt.positionals import Direction
 from hlt.positionals import Position
 
-# This library allows you to generate random numbers.
-import random
-
 # Logging allows you to save messages for yourself. This is required because the regular STDOUT
 #   (print statements) are reserved for the engine-bot communication.
 import logging
 import numpy as np
-import tensorflow as tf
 
 
 from baselines.acer.acer import Model, create_model
