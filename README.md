@@ -5,7 +5,8 @@ A reinforcement learning bot for the Halite III programming competition https://
 
 ```bash
 git clone https://github.com/npfoss/Halite3RL.git
-pip install tensorflow scipy zstd gym dill gym[atari]
+cd Halite3RL
+pip install tensorflow scipy zstd gym dill gym[atari] joblib
 curl -O https://halite.io/assets/downloads/Halite3_Python3_Linux-AMD64.zip
 unzip Halite3_Python3_Linux-AMD64.zip -d tmp_halite
 mv tmp_halite/halite .
