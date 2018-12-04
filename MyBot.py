@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 # Python 3.6
 
+from benchmarking import benchmarker
+from unittest.mock import Mock
+benchmark = benchmarker(printer=lambda x: None, warner=lambda x: None)
+benchmark.start()
+
 # NO PRINTING DURING IMPORTS DAMMIT
 import os
 import sys
-f = open(os.devnull, 'w')
+devnull = open(os.devnull, 'w')
 oldstdout = sys.stdout
-sys.stdout = f
+sys.stdout = devnull
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # check if it's the real deal or just learning mode:
@@ -27,18 +32,25 @@ from hlt.positionals import Position
 import logging
 import numpy as np
 
-
-from baselines.acer.acer import Model, create_model
+from baselines.acer.acer import Model, create_model # this is what's taking 4 seconds
 from baselines.common.tf_util import load_variables
+
 import dill as pkl
 import json
+
+benchmark.benchmark("imports")
 
 with open("params.pkl", "rb") as f:
     learn_params = pkl.load(f)
     env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
+
+benchmark.benchmark("create model")
+
 load_variables("actor.ckpt")
 
-f.close()
+benchmark.benchmark("load weights")
+
+devnull.close()
 sys.stdout = oldstdout
 
 from replay_parser import localize_matrix, gen_obs
@@ -57,6 +69,11 @@ game.ready("MyPythonBot")
 logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
 board_length = game.game_map.width
 
+benchmark.end("init done")
+logging.info(str(benchmark))
+benchmark = benchmarker()
+benchmark.start()
+
 
 """ <<<Game Loop>>> """
 
@@ -65,6 +82,7 @@ while True:
     #   running update_frame().
     game.update_frame()
     # You extract player metadata and the updated map metadata here for convenience.
+    benchmark.benchmark("start turn")
     me = game.me
     game_map = game.game_map
 
@@ -91,10 +109,14 @@ while True:
     # halite_exp = np.expand_dims(halite, axis=1)
 
     frame_mus = {}
+
+    benchmark.benchmark("created env variables")
     for ship in me.get_ships():
 
         obs = gen_obs(state, {'x': ship.position.x, 'y': ship.position.y}) # (64,64,7)
         # print(halite.shape, obs.shape) # spoiler it's (32, 32, 1) (64, 64, 7)
+
+        benchmark.benchmark("generated observations")
 
         actions, mus, _ = model._step(obs)#, M=self.dones)
 
@@ -106,6 +128,7 @@ while True:
         ## mus: [[0.16987674 0.16746981 0.15873784 0.16824721 0.168809   0.16685943]] 
         ## states: []
         # TODO: save mus (could just use log file!)
+        benchmark.benchmark("ran model")
         frame_mus[ship.id] = [float(mu) for mu in mus[0]]
         action = actions[0]
         if action < 4:# and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
@@ -119,8 +142,11 @@ while True:
             # have to check because it crashes otherwise
             command_queue.append(ship.make_dropoff())
             me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
-    if not ITS_THE_REAL_DEAL:
-        logging.info("mu:"+json.dumps(frame_mus))
+
+        # documentation ?
+        if not ITS_THE_REAL_DEAL:
+            logging.info("mu:"+json.dumps(frame_mus))
+        benchmark.benchmark("ship {} turn stats".format(ship.id))
 
 
     # **** SPAWN RULE STUFF **** 
@@ -130,6 +156,6 @@ while True:
         command_queue.append(me.shipyard.spawn())
 
 
-
+    benchmark.benchmark("end turn")
     # Send your moves back to the game environment, ending this turn.
     game.end_turn(command_queue)
