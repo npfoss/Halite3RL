@@ -9,6 +9,9 @@ oldstdout = sys.stdout
 sys.stdout = f
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+# check if it's the real deal or just learning mode:
+ITS_THE_REAL_DEAL = '--learning=true' in sys.argv
+
 # Import the Halite SDK, which will let you interact with the game.
 import hlt
 
@@ -53,6 +56,7 @@ game.ready("MyPythonBot")
 #   Here, you log here your id, which you can always fetch from the game object by using my_id.
 logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
 board_length = game.game_map.width
+
 
 """ <<<Game Loop>>> """
 
