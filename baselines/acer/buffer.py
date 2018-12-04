@@ -79,6 +79,23 @@ class Buffer(object):
         self.dones[self.next_idx] = dones
         # self.masks[self.next_idx] = masks
 
+        # TEST CODE for storing these on disk instad
+        # conclusion: not a great idea because it takes 0.13285534381866454 sec on average
+        #   to load enc_obs 1434 long
+        '''
+        from IPython import embed; embed()
+
+        with open('test.np', 'wb') as f:
+            np.save(f, enc_obs)
+
+        from time import time
+        start = time()
+        for i in range(10):
+            with open('test.np', 'rb') as f:
+                eo = np.load(f)
+        end = time()
+        '''
+
         self.next_idx = (self.next_idx + 1) % self.size
         self.num_in_buffer = min(self.size, self.num_in_buffer + 1)
 
