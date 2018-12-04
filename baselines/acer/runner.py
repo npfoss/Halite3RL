@@ -1,13 +1,8 @@
 import numpy as np
-from baselines.common.runners import AbstractEnvRunner
-from baselines.common.vec_env.vec_frame_stack import VecFrameStack
-from gym import spaces
-import os
 from replay_parser import localize_matrix, load_replay, replay_to_enc_obs_n_stuff, enc_obs_to_obs
 
 import subprocess
 import json
-import tensorflow as tf
 
 # from IPython import embed
 
@@ -29,51 +24,43 @@ class HaliteRunner:
 
     def run(self):
 
+        #run a game.
+        size = np.random.choice([32, 40, 48, 56, 64])
+        num_players = 2 if (np.random.random() < 0.5) else 4
+
+        # pickle the model
+        self.model.save("actor.ckpt")
+
+        o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
+        j = json.loads(o.decode("utf-8"))
+
+        #next, parse the replay
+        replay_file_name = j['replay']
         enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = (None,)*6
-        while enc_obs is None or len(enc_obs) < self.nsteps:
-            #run a game.
-            size = np.random.choice([32, 40, 48, 56, 64])
-            num_players = 2 if (np.random.random() < 0.5) else 4
 
-            # pickle the model
-            self.model.save("actor.ckpt")
+        for player in range(num_players):
+            # player = np.random.randint(0, num_players-1)
 
-            o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
-            j = json.loads(o.decode("utf-8"))
+            replay = load_replay(replay_file_name, player)
 
-            #next, parse the replay
-            replay_file_name = j['replay']
-            for player in range(num_players):
-                # player = np.random.randint(0, num_players-1)
+            eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
 
-                replay = load_replay(replay_file_name, player)
-
-                eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
-
-                if enc_obs is None:
-                    enc_obs = eo
-                    mb_actions = a
-                    mb_rewards = r
-                    mb_mus = m
-                    mb_dones = d
-                    mb_masks = ma
-                else:
-                    enc_obs = np.concatenate((enc_obs, eo), axis=0)
-                    mb_actions = np.concatenate((mb_actions, a), axis=0)
-                    mb_rewards = np.concatenate((mb_rewards, r), axis=0)
-                    mb_mus = np.concatenate((mb_mus, m), axis=0)
-                    mb_dones = np.concatenate((mb_dones, d), axis=0)
-                    # np.concatenate((mb_masks, ma), axis=0)
-
-        # enc_obs = np.array(enc_obs)
-        # mb_actions = np.array(mb_actions)
-        # mb_rewards = np.array(mb_rewards)
-        # mb_mus = np.array(mb_mus)
-        # mb_dones = np.array(mb_dones)
-        # mb_masks = np.array(mb_masks)
+            if enc_obs is None:
+                enc_obs = eo
+                mb_actions = a
+                mb_rewards = r
+                mb_mus = m
+                mb_dones = d
+                # mb_masks = ma
+            else:
+                enc_obs = np.concatenate((enc_obs, eo), axis=0)
+                mb_actions = np.concatenate((mb_actions, a), axis=0)
+                mb_rewards = np.concatenate((mb_rewards, r), axis=0)
+                mb_mus = np.concatenate((mb_mus, m), axis=0)
+                mb_dones = np.concatenate((mb_dones, d), axis=0)
+                # np.concatenate((mb_masks, ma), axis=0)
 
         mb_obs = enc_obs_to_obs(enc_obs)
-
 
         # # enc_obs = np.split(self.obs, self.nstack, axis=3)  # so now list of obs steps
         # enc_obs = np.split(self.env.stackedobs, self.env.nstack, axis=-1)

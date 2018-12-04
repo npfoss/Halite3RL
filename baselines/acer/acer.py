@@ -244,10 +244,11 @@ class Acer():
         runner, model, buffer, steps = self.runner, self.model, self.buffer, self.steps
         if on_policy:
             enc_obs, obs, actions, rewards, mus, dones, masks = runner.run()
-            try:
-                self.episode_stats.feed(rewards[-self.nsteps:], dones[-self.nsteps:])
-            except:
-                from IPython import embed; embed()
+            if len(dones) >= self.nsteps:
+                try:
+                    self.episode_stats.feed(rewards[-self.nsteps:], dones[-self.nsteps:])
+                except:
+                    from IPython import embed; embed()
             if buffer is not None:
                 buffer.put(enc_obs, actions, rewards, mus, dones, masks)
         # else:
@@ -379,7 +380,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
     replay_start = min(replay_start, buffer_size)
     replay_ratio = 40
 
-    print(locals())
+    # print(locals())
 
     learn_params = {"network": network, "seed": seed, "nsteps": nsteps, "total_timesteps": total_timesteps, "q_coef": q_coef, "ent_coef": ent_coef,
         "max_grad_norm": max_grad_norm, "lr": lr, "lrschedule": lrschedule, "rprop_epsilon": rprop_epsilon, "rprop_alpha": rprop_alpha, "gamma": gamma,

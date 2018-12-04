@@ -97,6 +97,7 @@ while True:
         # print(halite.shape, obs.shape) # spoiler it's (32, 32, 1) (64, 64, 7)
 
         actions, mus, _ = model._step(obs)#, M=self.dones)
+
         # print('actions:', actions,\
         #         '\nmus:', mus,\
         #         '\nstates:', states)
@@ -118,7 +119,8 @@ while True:
             # have to check because it crashes otherwise
             command_queue.append(ship.make_dropoff())
             me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
-    logging.info("mu:"+json.dumps(frame_mus))
+    if not ITS_THE_REAL_DEAL:
+        logging.info("mu:"+json.dumps(frame_mus))
 
 
     # **** SPAWN RULE STUFF **** 
@@ -131,4 +133,3 @@ while True:
 
     # Send your moves back to the game environment, ending this turn.
     game.end_turn(command_queue)
-

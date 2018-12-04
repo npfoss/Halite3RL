@@ -2,7 +2,8 @@ import json
 import zstd
 import hlt
 import numpy as np
-import tensorflow as tf
+
+# from IPython import embed
 
 def localize_matrix(m, new_length, old_center_y, old_center_x):
     # at most can double 
@@ -126,7 +127,7 @@ def load_replay(file_name, player_id):
                             moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
                     friendly_ships[y][x] = 1
                     friendly_ships_halite[y][x] = energy
-                    ship_info[entity_id]["mus"] = frame_mus[entity_id]
+                    ship_info[entity_id]["mus"] = np.array(frame_mus[entity_id], dtype=np.float32)
                 else: # enemy 
                     enemy_ships[y][x] = 1
                     enemy_ships_halite[y][x] = energy 
@@ -194,7 +195,7 @@ def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
                 "obs": gen_obs(frame, ship_info["pos"]),
                 "actions": env.action_to_num[ship_info["action"]],
                 "rewards": gen_rewards(frame, ship_info, \
-                    ship_id in parsed_frames[frame_index + 1] if frame_index + 1 < len(parse_frames) else False),
+                    ship_id in parsed_frames[frame_index + 1] if frame_index + 1 < len(parsed_frames) else False),
                 "mus": ship_info["mus"],
                 "dones": False,
                 # "masks": False, # probably only matters for LSTMs, so... eh.
@@ -212,6 +213,7 @@ def read_mus(player_id):
             if "mu:" in line:
                 mu_str = line.split("mu:")[-1]
                 mus.append(json.loads(mu_str))
+
     return mus
 
 def gen_rewards(state, ship_info, survives):
