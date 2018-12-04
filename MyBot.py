@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # Python 3.6
 
+# NO PRINTING DURING IMPORTS DAMMIT
+import os
+import sys
+f = open(os.devnull, 'w')
+oldstdout = sys.stdout
+sys.stdout = f
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 # Import the Halite SDK, which will let you interact with the game.
 import hlt
 
@@ -20,12 +28,6 @@ import logging
 import numpy as np
 import tensorflow as tf
 
-import os
-import sys
-f = open(os.devnull, 'w')
-oldstdout = sys.stdout
-sys.stdout = f
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from baselines.acer.acer import Model
 from baselines.common.tf_util import load_variables
@@ -72,8 +74,20 @@ while True:
     game_map = game.game_map
 
     rounds_left = constants.MAX_TURNS - game.turn_number
-    halite = np.array([[[game_map[Position(x,y)].halite_amount] for x in range(board_length)] for y in range(board_length)])
+    halite = np.array([[game_map[Position(x,y)].halite_amount for x in range(board_length)] for y in range(board_length)])
     friendly_ships_halite = np.array([[game_map[Position(x,y)].structure_type for x in range(board_length)] for y in range(board_length)])
+
+    map_list = ['halite_map', 'friendly_ships', 'friendly_ships_halite', 'friendly_dropoffs',
+                    'enemy_ships', 'enemy_ships_halite', 'enemy_dropoffs']
+    state = {
+                'halite_map': halite,
+                'friendly_ships': halite,
+                'friendly_ships_halite': halite,
+                'friendly_dropoffs': halite,
+                'enemy_ships': halite,
+                'enemy_ships_halite': halite,
+                'enemy_dropoffs': halite,
+            }
 
     # A command queue holds all the commands you will run this turn. You build this list up and submit it at the
     #   end of the turn.
@@ -83,7 +97,7 @@ while True:
 
     frame_mus = {}
     for ship in me.get_ships():
-        state = {'halite_map': halite}
+
         obs = gen_obs(state, {'x': ship.position.x, 'y': ship.position.y}) # (64,64,7)
         # print(halite.shape, obs.shape) # spoiler it's (32, 32, 1) (64, 64, 7)
 

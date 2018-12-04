@@ -19,6 +19,14 @@ class HaliteEnv:
         # self.observation_space = spaces.Box(lows, highs, shape=(7, 64, 64), dtype=np.int)
 
         self.action_space = spaces.Discrete(6) # North, South, East, West, Still, BUILD_DROPOFF (as numbers 0-5)
+        self.action_to_num = {
+                'n': 0,
+                's': 1,
+                'e': 2,
+                'w': 3,
+                'o': 4,
+                'c': 5,
+            }
 
         self.nstack = 7 # this is the number of timesteps to stack into one "observation"
                         # (the Atari models all take the last 4 frames (greyscale) as input to the network)

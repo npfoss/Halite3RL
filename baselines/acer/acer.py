@@ -230,7 +230,7 @@ class Model(object):
 
 
 class Acer():
-    def __init__(self, runner, model, buffer, log_interval):
+    def __init__(self, runner, model, buffer, log_interval, nsteps):
         self.runner = runner
         self.model = model
         self.buffer = buffer
@@ -238,17 +238,23 @@ class Acer():
         self.tstart = None
         self.episode_stats = EpisodeStats(runner.nsteps, runner.nenv)
         self.steps = None
+        self.nsteps = nsteps
 
     def call(self, on_policy):
         runner, model, buffer, steps = self.runner, self.model, self.buffer, self.steps
         if on_policy:
             enc_obs, obs, actions, rewards, mus, dones, masks = runner.run()
-            self.episode_stats.feed(rewards, dones)
+            try:
+                self.episode_stats.feed(rewards[-self.nsteps:], dones[-self.nsteps:])
+            except:
+                from IPython import embed; embed()
             if buffer is not None:
                 buffer.put(enc_obs, actions, rewards, mus, dones, masks)
-        else:
+        # else:
             # get obs, actions, rewards, mus, dones from buffer.
-            obs, actions, rewards, mus, dones, masks = buffer.get()
+        obs, actions, rewards, mus, dones, masks = buffer.get()
+
+        masks = np.zeros((dones.shape[1]+1,)) # they probably don't matter except for LSTMs
 
 
         # reshape stuff correctly
@@ -345,7 +351,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
 
     print("Running Acer Simple")
 
-    nsteps = 500
+    # nsteps = 500
     print(locals())
     set_global_seeds(seed)
     env = HaliteEnv()
@@ -368,13 +374,13 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
         pkl.dump(model_params, f)
     model = Model(**model_params)
 
-    runner = HaliteRunner(model=model, env=env, gamma=gamma)
+    runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
     if replay_ratio > 0:
         buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size)
     else:
         buffer = None
     nbatch = nenvs*nsteps
-    acer = Acer(runner, model, buffer, log_interval)
+    acer = Acer(runner, model, buffer, log_interval, nsteps)
     acer.tstart = time.time()
 
     for acer.steps in range(0, total_timesteps, nbatch): #nbatch samples, 1 on_policy call and multiple off-policy calls
