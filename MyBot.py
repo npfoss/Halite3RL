@@ -53,7 +53,7 @@ benchmark.benchmark("load weights")
 devnull.close()
 sys.stdout = oldstdout
 
-from replay_parser import localize_matrix, gen_obs
+from replay_parser import gen_obs
 
 """ <<<Game Begin>>> """
 
