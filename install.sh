@@ -6,5 +6,6 @@
 # export PYTHONPATH="$PWD/:$PYTHONPATH"
 
 # chmod -R 777 .
-python3.6 -m pip install --target . tqdm
+
 python3.6 -m pip install --target . zstd
+
