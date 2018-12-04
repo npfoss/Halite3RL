@@ -244,7 +244,10 @@ class Acer():
         runner, model, buffer, steps = self.runner, self.model, self.buffer, self.steps
         if on_policy:
             enc_obs, obs, actions, rewards, mus, dones, masks = runner.run()
-            self.episode_stats.feed(rewards[-self.nsteps:], dones[-self.nsteps:])
+            try:
+                self.episode_stats.feed(rewards[-self.nsteps:], dones[-self.nsteps:])
+            except:
+                from IPython import embed; embed()
             if buffer is not None:
                 buffer.put(enc_obs, actions, rewards, mus, dones, masks)
         # else:

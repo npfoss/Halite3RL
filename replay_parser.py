@@ -4,8 +4,6 @@ import hlt
 import numpy as np
 import tensorflow as tf
 
-# from IPython import embed
-
 def localize_matrix(m, new_length, old_center_y, old_center_x):
     # at most can double 
     old_length = m.shape[0]
@@ -69,7 +67,7 @@ def load_replay(file_name, player_id):
     # ***** Update for each frame ***** 
     for t in range(actual_turns):
         frame = data['full_frames'][t]
-        frame_mus = [] if t == 0 else game_mus[t - 1] if t <= len(game_mus) else \
+        frame_mus = ([] if t == 0 else game_mus[t - 1]) if t <= len(game_mus) else \
 			{j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
 
         # Generate matrices for this turn 
@@ -121,7 +119,7 @@ def load_replay(file_name, player_id):
                 if (player == player_id): # friendly 
                     ship_info[entity_id] = {'pos': {'x': x, 'y': y}}
                     ship_info[entity_id]['energy'] = energy
-                    ship_info[entity_id]['energy_delta'] = -energy # will be overridden once we know what actually happened
+                    ship_info[entity_id]['energy_delta'] = 0 # will be overridden once we know what actually happened
                     # note: create supply depot move looks like this: {'id': 5, 'type': 'c'}
                     ship_info[entity_id]['action'] = 'o' if not entity_id in moves else \
                             moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']

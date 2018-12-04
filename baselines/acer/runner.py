@@ -29,25 +29,43 @@ class HaliteRunner:
 
     def run(self):
 
-        #first, run a game.
-        size = 32# np.random.choice([32, 40, 48, 56, 64])
-        num_players = 2# if (np.random.random() < 0.5) else 4
+        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = [] , [] , [] , [] , [] , []
+        while len(enc_obs) < self.nsteps:
+            #run a game.
+            size = 32# np.random.choice([32, 40, 48, 56, 64])
+            num_players = 2# if (np.random.random() < 0.5) else 4
 
-        # pickle the model
-        self.model.save("actor.ckpt")
-        #with open("weights", "wb+") as f:
-        #    pkl.dump(self.model._step, f)
+            # pickle the model
+            self.model.save("actor.ckpt")
+            #with open("weights", "wb+") as f:
+            #    pkl.dump(self.model._step, f)
 
-        o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
-        j = json.loads(o.decode("utf-8"))
+            o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
+            j = json.loads(o.decode("utf-8"))
 
-        #next, parse the replay and take all the credit
-        replay_file_name = j['replay']
-        player = np.random.randint(0, num_players-1)
+            #next, parse the replay
+            replay_file_name = j['replay']
+            for player in range(num_players):
+                # player = np.random.randint(0, num_players-1)
 
-        replay = load_replay(replay_file_name, player)
+                replay = load_replay(replay_file_name, player)
 
-        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
+                eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
+
+                enc_obs.append(eo)
+                mb_actions.append(a)
+                mb_rewards.append(r)
+                mb_mus.append(m)
+                mb_dones.append(d)
+                mb_masks.append(ma)
+
+        enc_obs = np.array(enc_obs)
+        mb_actions = np.array(mb_actions)
+        mb_rewards = np.array(mb_rewards)
+        mb_mus = np.array(mb_mus)
+        mb_dones = np.array(mb_dones)
+        mb_masks = np.array(mb_masks)
+
         mb_obs = enc_obs_to_obs(enc_obs)
 
 
