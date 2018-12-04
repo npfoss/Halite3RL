@@ -82,12 +82,13 @@ class Buffer(object):
         self.next_idx = (self.next_idx + 1) % self.size
         self.num_in_buffer = min(self.size, self.num_in_buffer + 1)
 
-    def take(self, x, idx, where_to_sample):
+    def take(self, x, idx, where_to_sample, one_extra=False):
         nenv = self.nenv
-        out = np.empty([nenv] + [self.nsteps] + list(x.shape[3:]), dtype=x.dtype)
+        # from IPython import embed; embed()
+        out = np.empty([nenv] + [self.nsteps + one_extra] + list(x[0].shape[1:]), dtype=x[0].dtype)
         for i in range(nenv):
             # annoying: sometimes have to wrap around. and add some from the beginning of x to the end of out
-            out[i] = x[idx[i]].take(np.arange(where_to_sample[i], where_to_sample[i] + self.nsteps), mode='wrap', axis=0)
+            out[i] = x[idx[i]].take(np.arange(where_to_sample[i], where_to_sample[i] + self.nsteps + one_extra), mode='wrap', axis=0)
         return out
 
     def get(self):
@@ -107,9 +108,9 @@ class Buffer(object):
         #   it's not important that it uses dones, they're all the same length
         where_to_sample = np.array([np.random.randint(0, self.dones[i].shape[0]) for i in idx])
 
-        take = lambda x: self.take(x, idx, where_to_sample)  # for i in range(nenv)], axis = 0)
+        take = lambda x, oe=False: self.take(x, idx, where_to_sample, one_extra=oe)  # for i in range(nenv)], axis = 0)
         dones = take(self.dones)
-        enc_obs = take(self.enc_obs)
+        enc_obs = take(self.enc_obs, oe=True)
         obs = self.decode(enc_obs, dones)
         actions = take(self.actions)
         rewards = take(self.rewards)

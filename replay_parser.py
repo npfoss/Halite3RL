@@ -124,7 +124,7 @@ def load_replay(file_name, player_id):
                             moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
                     friendly_ships[y][x] = 1
                     friendly_ships_halite[y][x] = energy
-                    ship_info[entity_id]['mus'] = 1.0
+                    ship_info[entity_id]['mus'] = np.ones(6) # TODO: placeholder
                 else: # enemy 
                     enemy_ships[y][x] = 1
                     enemy_ships_halite[y][x] = energy 

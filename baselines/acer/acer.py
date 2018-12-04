@@ -246,11 +246,11 @@ class Acer():
             # self.episode_stats.feed(rewards, dones)
             if buffer is not None:
                 buffer.put(enc_obs, actions, rewards, mus, dones, masks)
-        else:
+        # else:
             # get obs, actions, rewards, mus, dones from buffer.
-            obs, actions, rewards, mus, dones, masks = buffer.get()
+        obs, actions, rewards, mus, dones, masks = buffer.get()
 
-        masks = np.zeros(dones.shape) # they probably don't matter except for LSTMs
+        masks = np.zeros((dones.shape[0]+1,)) # they probably don't matter except for LSTMs
 
 
         # reshape stuff correctly
