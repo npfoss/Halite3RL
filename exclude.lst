@@ -9,6 +9,5 @@ clear_replays.sh
 exclude.lst
 Halite\ README.md
 README.md
-replay_parser.py
 run_game.sh
 zipper.sh
