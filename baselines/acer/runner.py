@@ -3,7 +3,7 @@ from baselines.common.runners import AbstractEnvRunner
 from baselines.common.vec_env.vec_frame_stack import VecFrameStack
 from gym import spaces
 import os
-from replay_parser import localize_matrix, load_replay, replay_to_enc_obs_n_stuff
+from replay_parser import localize_matrix, load_replay, replay_to_enc_obs_n_stuff, enc_obs_to_obs
 
 import subprocess
 import json
@@ -13,10 +13,11 @@ import tensorflow as tf
 
 class HaliteRunner:
 
-    def __init__(self, model, env, gamma):
+    def __init__(self, model, env, gamma, nsteps):
+        self.env = env
         self.nact = 6
         self.nenv = 1
-        self.nsteps = 501 # (max game len) *** MAY NEED TO VARY WITH GAME (?) buffer size affected by this...
+        self.nsteps = nsteps
         self.model = model
         self.batch_ob_shape = (self.nenv*(self.nsteps+1),) + env.observation_space.shape
 
@@ -28,25 +29,51 @@ class HaliteRunner:
 
     def run(self):
 
-        #first, run a game.
-        size = 32# np.random.choice([32, 40, 48, 56, 64])
-        num_players = 2# if (np.random.random() < 0.5) else 4
+        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = (None,)*6
+        while enc_obs is None or len(enc_obs) < self.nsteps:
+            #run a game.
+            size = 32# np.random.choice([32, 40, 48, 56, 64])
+            num_players = 2# if (np.random.random() < 0.5) else 4
 
-        # pickle the model
-        self.model.save("actor.ckpt")
-        #with open("weights", "wb+") as f:
-        #    pkl.dump(self.model._step, f)
+            # pickle the model
+            self.model.save("actor.ckpt")
+            #with open("weights", "wb+") as f:
+            #    pkl.dump(self.model._step, f)
 
-        o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
-        j = json.loads(o.decode("utf-8"))
+            o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
+            j = json.loads(o.decode("utf-8"))
 
-        #next, parse the replay and take all the credit
-        player = np.random.randint(0, num_players-1)
-        replay_file_name = j['replay']
+            #next, parse the replay
+            replay_file_name = j['replay']
+            for player in range(num_players):
+                # player = np.random.randint(0, num_players-1)
 
-        replay = load_replay(replay_file_name, player)
+                replay = load_replay(replay_file_name, player)
 
-        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay)
+                eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
+
+                if enc_obs is None:
+                    enc_obs = eo
+                    mb_actions = a
+                    mb_rewards = r
+                    mb_mus = m
+                    mb_dones = d
+                    mb_masks = ma
+                else:
+                    enc_obs = np.concatenate((enc_obs, eo), axis=0)
+                    mb_actions = np.concatenate((mb_actions, a), axis=0)
+                    mb_rewards = np.concatenate((mb_rewards, r), axis=0)
+                    mb_mus = np.concatenate((mb_mus, m), axis=0)
+                    mb_dones = np.concatenate((mb_dones, d), axis=0)
+                    # np.concatenate((mb_masks, ma), axis=0)
+
+        # enc_obs = np.array(enc_obs)
+        # mb_actions = np.array(mb_actions)
+        # mb_rewards = np.array(mb_rewards)
+        # mb_mus = np.array(mb_mus)
+        # mb_dones = np.array(mb_dones)
+        # mb_masks = np.array(mb_masks)
+
         mb_obs = enc_obs_to_obs(enc_obs)
 
 

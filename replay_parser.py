@@ -4,8 +4,6 @@ import hlt
 import numpy as np
 import tensorflow as tf
 
-# from IPython import embed
-
 def localize_matrix(m, new_length, old_center_y, old_center_x):
     # at most can double 
     old_length = m.shape[0]
@@ -69,8 +67,9 @@ def load_replay(file_name, player_id):
     # ***** Update for each frame ***** 
     for t in range(actual_turns):
         frame = data['full_frames'][t]
-        frame_mus = [] if t == 0 else game_mus[t - 1] if t <= len(game_mus) else \
-            {j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
+        
+        frame_mus = ([] if t == 0 else game_mus[t - 1]) if t <= len(game_mus) else \
+			{j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
 
         # Generate matrices for this turn 
         old_halite = np.copy(halite)
@@ -121,6 +120,7 @@ def load_replay(file_name, player_id):
                 if (player == player_id): # friendly 
                     ship_info[entity_id] = {'pos': {'x': x, 'y': y}}
                     ship_info[entity_id]['energy'] = energy
+                    ship_info[entity_id]['energy_delta'] = 0 # will be overridden once we know what actually happened
                     # note: create supply depot move looks like this: {'id': 5, 'type': 'c'}
                     ship_info[entity_id]['action'] = 'o' if not entity_id in moves else \
                             moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
@@ -135,7 +135,7 @@ def load_replay(file_name, player_id):
             # compute ship halite deltas for previous turn
             for idee in parsed_frames[t-1]['ship_info']:
                 parsed_frames[t-1]['ship_info'][idee]['energy_delta'] = \
-                                  ship_info[idee]['energy'] if idee in ship_info else 0 \
+                                  (ship_info[idee]['energy'] if idee in ship_info else 0) \
                                 - parsed_frames[t-1]['ship_info'][idee]['energy']
 
         for event in frame['events']: # update dropoffs 
@@ -170,11 +170,12 @@ def load_replay(file_name, player_id):
                        }
 
         parsed_frames.append(turn_results)
+
     parsed_frames = parsed_frames[1:-1]
     return parsed_frames
 
 
-def replay_to_enc_obs_n_stuff(parsed_frames, gamma):
+def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
     """ converts output of load_replay to the format we store things in the buffer.
 
         right now, that's one giant string of observations+stuff, for each ship's
@@ -191,16 +192,17 @@ def replay_to_enc_obs_n_stuff(parsed_frames, gamma):
                 traces[ship_id]=[]
             traces[ship_id].append({
                 "obs": gen_obs(frame, ship_info["pos"]),
-                "actions": ship_info["action"],
+                "actions": env.action_to_num[ship_info["action"]],
                 "rewards": gen_rewards(frame, ship_info),
                 "mus": ship_info["mus"],
                 "dones": False,
-                "masks": False, # probably only matters for LSTMs, so... eh
+                # "masks": False, # probably only matters for LSTMs, so... eh.
+                    # if you ever want to use masks, save them in the buffer too
             })
     for ship in traces.values():
         ship[-1]["dones"] = True
-    return_order = ["obs", "actions", "rewards", "mus", "dones", "masks"]
-    return [sum(([frame[key] for frame in ship] for ship in traces.values()), []) for key in return_order]
+    return_order = ["obs", "actions", "rewards", "mus", "dones",]# "masks"]
+    return [np.array(sum(([frame[key] for frame in ship] for ship in traces.values()), [])) for key in return_order] + [None] #masks
 
 def read_mus(player_id):
     mus = []
