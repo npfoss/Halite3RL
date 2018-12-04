@@ -1,3 +1,14 @@
 replays/*
 halite
 .git/*
+dependencies/*
+__pycache__/*
+acer_run.sh
+*.log
+clear_replays.sh
+exclude.lst
+Halite\ README.md
+README.md
+replay_parser.py
+run_game.sh
+zipper.sh
