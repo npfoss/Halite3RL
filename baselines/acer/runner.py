@@ -14,6 +14,7 @@ import tensorflow as tf
 class HaliteRunner:
 
     def __init__(self, model, env, gamma, nsteps):
+        self.env = env
         self.nact = 6
         self.nenv = 1
         self.nsteps = nsteps
@@ -37,19 +38,16 @@ class HaliteRunner:
         #with open("weights", "wb+") as f:
         #    pkl.dump(self.model._step, f)
 
-        if False: # doing it for real
-            o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
-            j = json.loads(o.decode("utf-8"))
+        o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
+        j = json.loads(o.decode("utf-8"))
 
-            #next, parse the replay and take all the credit
-            replay_file_name = j['replay']
+        #next, parse the replay and take all the credit
+        replay_file_name = j['replay']
         player = np.random.randint(0, num_players-1)
-        # FAKE just read old replay
-        replay_file_name = 'replays/replay-20181203-162023-0500-1543872008-32-32.hlt'
 
         replay = load_replay(replay_file_name, player)
 
-        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay, gamma=self.gamma)
+        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
         mb_obs = enc_obs_to_obs(enc_obs)
 
 

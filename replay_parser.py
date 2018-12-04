@@ -173,7 +173,7 @@ def load_replay(file_name, player_id):
     return parsed_frames
 
 
-def replay_to_enc_obs_n_stuff(parsed_frames, gamma):
+def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
     """ converts output of load_replay to the format we store things in the buffer.
 
         right now, that's one giant string of observations+stuff, for each ship's
@@ -190,7 +190,7 @@ def replay_to_enc_obs_n_stuff(parsed_frames, gamma):
                 traces[ship_id]=[]
             traces[ship_id].append({
                 "obs": gen_obs(frame, ship_info["pos"]),
-                "actions": ship_info["action"],
+                "actions": env.action_to_num[ship_info["action"]],
                 "rewards": gen_rewards(frame, ship_info),
                 "mus": ship_info["mus"],
                 "dones": False,
@@ -200,7 +200,6 @@ def replay_to_enc_obs_n_stuff(parsed_frames, gamma):
     for ship in traces.values():
         ship[-1]["dones"] = True
     return_order = ["obs", "actions", "rewards", "mus", "dones",]# "masks"]
-    print("in replay_to_enc_obs_n_stuff")
     a = [np.array(sum(([frame[key] for frame in ship] for ship in traces.values()), [])) for key in return_order] + [None]
     # from IPython import embed; embed()
     return [np.array(sum(([frame[key] for frame in ship] for ship in traces.values()), [])) for key in return_order] + [None] #masks
