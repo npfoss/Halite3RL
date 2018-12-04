@@ -37,8 +37,6 @@ class HaliteRunner:
 
             # pickle the model
             self.model.save("actor.ckpt")
-            #with open("weights", "wb+") as f:
-            #    pkl.dump(self.model._step, f)
 
             o = subprocess.check_output(['./acer_run.sh', str(size), str(num_players)])
             j = json.loads(o.decode("utf-8"))

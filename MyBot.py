@@ -58,11 +58,6 @@ game.ready("MyPythonBot")
 logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
 board_length = game.game_map.width
 
-
-#sess = tf.Session()
-#with open("weights") as f:
-#    model = pkl.load(f)
-
 """ <<<Game Loop>>> """
 
 while True:
