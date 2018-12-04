@@ -29,8 +29,8 @@ class HaliteRunner:
 
     def run(self):
 
-        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = [] , [] , [] , [] , [] , []
-        while len(enc_obs) < self.nsteps:
+        enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = (None,)*6
+        while enc_obs is None or len(enc_obs) < self.nsteps:
             #run a game.
             size = 32# np.random.choice([32, 40, 48, 56, 64])
             num_players = 2# if (np.random.random() < 0.5) else 4
@@ -52,19 +52,27 @@ class HaliteRunner:
 
                 eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
 
-                enc_obs.append(eo)
-                mb_actions.append(a)
-                mb_rewards.append(r)
-                mb_mus.append(m)
-                mb_dones.append(d)
-                mb_masks.append(ma)
+                if enc_obs is None:
+                    enc_obs = eo
+                    mb_actions = a
+                    mb_rewards = r
+                    mb_mus = m
+                    mb_dones = d
+                    mb_masks = ma
+                else:
+                    enc_obs = np.concatenate((enc_obs, eo), axis=0)
+                    mb_actions = np.concatenate((mb_actions, a), axis=0)
+                    mb_rewards = np.concatenate((mb_rewards, r), axis=0)
+                    mb_mus = np.concatenate((mb_mus, m), axis=0)
+                    mb_dones = np.concatenate((mb_dones, d), axis=0)
+                    # np.concatenate((mb_masks, ma), axis=0)
 
-        enc_obs = np.array(enc_obs)
-        mb_actions = np.array(mb_actions)
-        mb_rewards = np.array(mb_rewards)
-        mb_mus = np.array(mb_mus)
-        mb_dones = np.array(mb_dones)
-        mb_masks = np.array(mb_masks)
+        # enc_obs = np.array(enc_obs)
+        # mb_actions = np.array(mb_actions)
+        # mb_rewards = np.array(mb_rewards)
+        # mb_mus = np.array(mb_mus)
+        # mb_dones = np.array(mb_dones)
+        # mb_masks = np.array(mb_masks)
 
         mb_obs = enc_obs_to_obs(enc_obs)
 

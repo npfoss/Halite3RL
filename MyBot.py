@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # Python 3.6
 
+# NO PRINTING DURING IMPORTS DAMMIT
+import os
+import sys
+f = open(os.devnull, 'w')
+oldstdout = sys.stdout
+sys.stdout = f
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 # Import the Halite SDK, which will let you interact with the game.
 import hlt
 
@@ -20,12 +28,6 @@ import logging
 import numpy as np
 import tensorflow as tf
 
-import os
-import sys
-f = open(os.devnull, 'w')
-oldstdout = sys.stdout
-sys.stdout = f
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from baselines.acer.acer import Model
 from baselines.common.tf_util import load_variables
