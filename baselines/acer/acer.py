@@ -279,6 +279,30 @@ class Acer():
                 logger.record_tabular(name, float(val))
             logger.dump_tabular()
 
+def create_model(network, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=0.5, ent_coef=0.01,
+          max_grad_norm=10, lr=7e-4, lrschedule='linear', rprop_epsilon=1e-5, rprop_alpha=0.99, gamma=0.99,
+          log_interval=100, buffer_size=50000, replay_ratio=4, replay_start=10000, c=10.0,
+          trust_region=True, alpha=0.99, delta=1, load_path=None, **network_kwargs):
+    set_global_seeds(seed)
+    env = HaliteEnv()
+    # if not isinstance(env, VecFrameStack):
+        # env = VecFrameStack(env, env.nstack)
+
+    # network = 'halite_net' # not yet, for now let's prented the halite layer is the only input
+    policy = build_policy(env, network, estimate_q=True, **network_kwargs)
+    nenvs = env.num_envs
+    ob_space = env.observation_space
+    ac_space = env.action_space
+
+    nstack = env.nstack
+    model_params = {"policy": policy, "ob_space": ob_space, "ac_space": ac_space, "nenvs": nenvs, "nsteps": nsteps,
+                "ent_coef": ent_coef, "q_coef": q_coef, "gamma": gamma,
+                "max_grad_norm": max_grad_norm, "lr": lr, "rprop_alpha": rprop_alpha, "rprop_epsilon": rprop_epsilon,
+                "total_timesteps": total_timesteps, "lrschedule": lrschedule, "c": c,
+                "trust_region": trust_region, "alpha": alpha, "delta":delta}
+    model = Model(**model_params)
+
+    return env , policy , nenvs , ob_space , ac_space , nstack , model
 
 def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=0.5, ent_coef=0.01,
           max_grad_norm=10, lr=7e-4, lrschedule='linear', rprop_epsilon=1e-5, rprop_alpha=0.99, gamma=0.99,
@@ -353,26 +377,16 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
 
     # nsteps = 500
     print(locals())
-    set_global_seeds(seed)
-    env = HaliteEnv()
-    # if not isinstance(env, VecFrameStack):
-        # env = VecFrameStack(env, env.nstack)
 
-    # network = 'halite_net' # not yet, for now let's prented the halite layer is the only input
-    policy = build_policy(env, network, estimate_q=True, **network_kwargs)
-    nenvs = env.num_envs
-    ob_space = env.observation_space
-    ac_space = env.action_space
+    learn_params = {"network": network, "seed": seed, "nsteps": nsteps, "total_timesteps": total_timesteps, "q_coef": q_coef, "ent_coef": ent_coef,
+        "max_grad_norm": max_grad_norm, "lr": lr, "lrschedule": lrschedule, "rprop_epsilon": rprop_epsilon, "rprop_alpha": rprop_alpha, "gamma": gamma,
+        "log_interval": log_interval, "buffer_size": buffer_size, "replay_ratio": replay_ratio, "replay_start": replay_start, "c": c,
+        "trust_region": trust_region, "alpha": alpha, "delta": delta, "load_path": load_path, **network_kwargs}
 
-    nstack = env.nstack
-    model_params = {"policy": policy, "ob_space": ob_space, "ac_space": ac_space, "nenvs": nenvs, "nsteps": nsteps,
-                    "ent_coef": ent_coef, "q_coef": q_coef, "gamma": gamma,
-                    "max_grad_norm": max_grad_norm, "lr": lr, "rprop_alpha": rprop_alpha, "rprop_epsilon": rprop_epsilon,
-                    "total_timesteps": total_timesteps, "lrschedule": lrschedule, "c": c,
-                    "trust_region": trust_region, "alpha": alpha, "delta":delta}
     with open("params.pkl", "wb") as f:
-        pkl.dump(model_params, f)
-    model = Model(**model_params)
+        pkl.dump(learn_params, f)
+
+    env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
 
     runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
     if replay_ratio > 0:

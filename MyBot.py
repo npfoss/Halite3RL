@@ -29,14 +29,14 @@ import numpy as np
 import tensorflow as tf
 
 
-from baselines.acer.acer import Model
+from baselines.acer.acer import Model, create_model
 from baselines.common.tf_util import load_variables
 import dill as pkl
 import json
 
 with open("params.pkl", "rb") as f:
-    params = pkl.load(f)
-    model = Model(**params)
+    learn_params = pkl.load(f)
+    env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
 load_variables("actor.ckpt")
 
 f.close()
