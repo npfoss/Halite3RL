@@ -69,7 +69,7 @@ def load_replay(file_name, player_id):
         frame = data['full_frames'][t]
         
         frame_mus = ([] if t == 0 else game_mus[t - 1]) if t <= len(game_mus) else \
-			{j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
+            {j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
 
         # Generate matrices for this turn 
         old_halite = np.copy(halite)
@@ -186,14 +186,15 @@ def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
         enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay)
     """
     traces = {} # obs, actions, rewards, mus, dones, masks for each ship keyed by id
-    for frame in parsed_frames:
+    for frame_index, frame in enumerate(parsed_frames):
         for ship_id, ship_info in frame["ship_info"].items():
             if ship_id not in traces:
                 traces[ship_id]=[]
             traces[ship_id].append({
                 "obs": gen_obs(frame, ship_info["pos"]),
                 "actions": env.action_to_num[ship_info["action"]],
-                "rewards": gen_rewards(frame, ship_info),
+                "rewards": gen_rewards(frame, ship_info, \
+                    ship_id in parsed_frames[frame_index + 1] if frame_index + 1 < len(parse_frames) else False),
                 "mus": ship_info["mus"],
                 "dones": False,
                 # "masks": False, # probably only matters for LSTMs, so... eh.
@@ -213,11 +214,11 @@ def read_mus(player_id):
                 mus.append(json.loads(mu_str))
     return mus
 
-def gen_rewards(state, ship_info):
+def gen_rewards(state, ship_info, survives):
     # magic numbers
     ship_pickup_multiplier = 0.25
     # selfish right now
-    if ship_info["energy_delta"] == -ship_info["energy"]:
+    if ship_info["energy_delta"] == -ship_info["energy"] and survives:
         # dropped off all halite, potential drop off
         initial_halite = state["halite_map"][ship_info["pos"]["y"]][ship_info["pos"]["x"]]
         move_cost = round(0.1 * initial_halite)
