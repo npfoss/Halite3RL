@@ -34,7 +34,7 @@ def mpi_moments(x, axis=0, comm=None, keepdims=False):
 def test_runningmeanstd():
     import subprocess
     subprocess.check_call(['mpirun', '-np', '3',
-        'python','-c',
+        'python3','-c',
         'from baselines.common.mpi_moments import _helper_runningmeanstd; _helper_runningmeanstd()'])
 
 def _helper_runningmeanstd():

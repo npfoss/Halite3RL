@@ -148,7 +148,8 @@ class Buffer(object):
 
         for filename in sample(replay_filenames, self.size):
             with open(filename, 'rb') as f:
-                enc_obs, actions, rewards, mus, dones = np.load(f)
+                data = np.load(f)
+                enc_obs, actions, rewards, mus, dones = (data[i] for i in data)
                 self.put(self, enc_obs, actions, rewards, mus, dones)
 
         # now update disk last to avoid concurrency problems
