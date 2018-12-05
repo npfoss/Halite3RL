@@ -11,7 +11,6 @@ git remote set-url origin https://RLaDOS:538allspelledout@github.com/kentslaney/
 cd ..
 
 
-
 # install script
 pip3 install tensorflow scipy zstd gym dill joblib
 pip3 install gym[atari]
