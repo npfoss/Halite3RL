@@ -105,20 +105,20 @@ while True:
         player_dropoffs = game.players[player].get_dropoffs()
         
         for ship in player_ships:
-            if player == game.me:
+            if player == me:
                 friendly_ships[ship.position.y][ship.position.x] = 1
-                friendly_ships[ship.position.y][ship.position.x] = ship.halite_amount
+                friendly_ships_halite[ship.position.y][ship.position.x] = ship.halite_amount
             else:
                 enemy_ships[ship.position.y][ship.position.x] = 1
-                enemy_dropoffs[ship.position.y][ship.position.x] = ship.halite_amount
+                enemy_ships_halite[ship.position.y][ship.position.x] = ship.halite_amount
                 
         for dropoff in player_dropoffs:
-            if player == game.me:
+            if player == me:
                 friendly_dropoffs[dropoff.position.y][dropoff.position.x] = 1
             else:
                 enemy_dropoffs[dropoff.position.y][dropoff.position.x] = 1
-        if game.players[player] == game.me: # shipyards don't count as dropoffs
-            friendly_dropoffs[game.players[player].shipyard.position.y][game.players[player].shipyard.position.x] = 1
+        if game.players[player] == me: # shipyards don't count as dropoffs
+            friendly_dropoffs[me.shipyard.position.y][me.shipyard.position.x] = 1
         else:
             enemy_dropoffs[game.players[player].shipyard.position.y][game.players[player].shipyard.position.x] = 1
 
