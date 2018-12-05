@@ -88,18 +88,48 @@ while True:
 
     rounds_left = constants.MAX_TURNS - game.turn_number
     halite = np.array([[game_map[Position(x,y)].halite_amount for x in range(board_length)] for y in range(board_length)])
-    friendly_ships_halite = np.array([[game_map[Position(x,y)].structure_type for x in range(board_length)] for y in range(board_length)])
+    friendly_ships = np.zeros((board_length, board_length))
+    friendly_ships_halite = np.zeros((board_length, board_length))
+    friendly_dropoffs = np.zeros((board_length, board_length))
+    enemy_ships = np.zeros((board_length, board_length))
+    enemy_ships_halite = np.zeros((board_length, board_length))
+    enemy_dropoffs =  np.zeros((board_length, board_length))
+    
+    for player in game.players:
+        player_ships = game.players[player].get_ships()
+        player_dropoffs = game.players[player].get_dropoffs()
+        
+        for ship in player_ships:
+            if player == game.me:
+                friendly_ships[ship.position.y][ship.position.x] = 1
+                friendly_ships[ship.position.y][ship.position.x] = ship.halite_amount
+            else:
+                enemy_ships[ship.position.y][ship.position.x] = 1
+                enemy_dropoffs[ship.position.y][ship.position.x] = ship.halite_amount
+                
+        for dropoff in player_dropoffs:
+            if player == game.me:
+                friendly_dropoffs[dropoff.position.y][dropoff.position.x] = 1
+            else:
+                enemy_dropoffs[dropoff.position.y][dropoff.position.x] = 1
+        if game.players[player] == game.me: # shipyards don't count as dropoffs
+            friendly_dropoffs[game.players[player].shipyard.position.y][game.players[player].shipyard.position.x] = 1
+        else:
+            enemy_dropoffs[game.players[player].shipyard.position.y][game.players[player].shipyard.position.x] = 1
+
 
     map_list = ['halite_map', 'friendly_ships', 'friendly_ships_halite', 'friendly_dropoffs',
                     'enemy_ships', 'enemy_ships_halite', 'enemy_dropoffs']
+
+    
     state = {
                 'halite_map': halite,
-                'friendly_ships': halite,
-                'friendly_ships_halite': halite,
-                'friendly_dropoffs': halite,
-                'enemy_ships': halite,
-                'enemy_ships_halite': halite,
-                'enemy_dropoffs': halite,
+                'friendly_ships': friendly_ships,
+                'friendly_ships_halite': friendly_ships_halite,
+                'friendly_dropoffs': friendly_dropoffs,
+                'enemy_ships': enemy_ships,
+                'enemy_ships_halite': enemy_ships_halite,
+                'enemy_dropoffs': enemy_dropoffs,
             }
 
     # A command queue holds all the commands you will run this turn. You build this list up and submit it at the
