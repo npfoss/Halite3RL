@@ -4,6 +4,10 @@ from baselines.acer.halite_env import HaliteEnv
 
 import subprocess
 import json
+import time
+import uuid
+import io
+import zstd
 
 # from IPython import embed
 
@@ -17,7 +21,7 @@ class HaliteRunner:
         self.nact = 6
         self.nenv = 1
         self.nsteps = params["nsteps"]
-        self.batch_ob_shape = (self.nenv*(self.nsteps+1),) + env.observation_space.shape
+        self.batch_ob_shape = (self.nenv*(self.nsteps+1),) + self.env.observation_space.shape
 
         # self.obs_dtype = env.observation_space.dtype
         # self.ac_dtype = env.action_space.dtype
@@ -102,20 +106,8 @@ class HaliteRunner:
         #return enc_obs, mb_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks
         # actuall, np.save them instead
         with open("sync/replays/"+str(int(time.time()*1e9)) + "_" + str(uuid.uuid4())+".phlt", "wb+") as f:
-            np.save(f, np.array([enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones]))
-
-if __name__ == "__main__":
-    with open("params.json") as f:
-        runs = json.load(f)["actor_runs_per_upload"]
-    runner = HaliteRunner()
-    current_proc = None
-    while True:
-        for i in range(runs):
-            runner.run()
-        while current_proc is not None and current_proc.poll() is not None:
-            # not done yet!
-            print("waiting on previous upload")
-            # wait n seconds
-            time.sleep(1)
-        current_proc = subprocess.Popen(['./actor_upload.sh'])
+            g = io.BytesIO()
+            np.savez(g, enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones)
+            g.seek(0)
+            f.write(zstd.compress(g.read()))
 
