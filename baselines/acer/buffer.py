@@ -1,8 +1,12 @@
 import numpy as np
+import subprocess
+from os import listdir
+from os.path import isfile, join
+from random import sample
 
 class Buffer(object):
     # gets obs, actions, rewards, mu's, (states, masks), dones
-    def __init__(self, env, nsteps, size=500000):
+    def __init__(self, env, nsteps, size=50, disk_size=250):
         self.nenv = env.num_envs
         self.nsteps = nsteps
         # self.nh, self.nw, self.nc = env.observation_space.shape
@@ -13,7 +17,21 @@ class Buffer(object):
         self.nstack = env.nstack
         self.nc //= self.nstack
         self.nbatch = self.nenv * self.nsteps
+
+        ''' The New Deal:
+
+            two buffers: one on disk, in sync/, holds many parsed replays from the distributed actors.
+                this buffer is large. does not fit in memory all at once.
+
+            buffer in RAM: basically what was here before, but instead of doing an on-policy update,
+                it pulls new replays from the actors and samples a subset of the replays on disk to
+                serve as the buffer for a little while (until next "on-policy" update)
+
+            works the same as before with in-memory buffer (mostly)
+        '''
+
         self.size = size# // (self.nsteps)  # Each loc contains nenv * nsteps frames, thus total buffer is nenv * size frames
+        self.disk_size = disk_size
 
         # Memory
         self.enc_obs = None
@@ -26,6 +44,7 @@ class Buffer(object):
         # Size indexes
         self.next_idx = 0
         self.num_in_buffer = 0
+        self.current_proc = None
 
     def has_atleast(self, frames):
         # Frames per env, so total (nenv * frames) Frames needed
@@ -45,7 +64,7 @@ class Buffer(object):
         return _stack_obs(enc_obs, dones,
                           nsteps=self.nsteps)
 
-    def put(self, enc_obs, actions, rewards, mus, dones, masks):
+    def put(self, enc_obs, actions, rewards, mus, dones, masks=None):
         # enc_obs [nenv, (nsteps + nstack), nh, nw, nc]
         # actions, rewards, dones [nenv, nsteps]
         # mus [nenv, nsteps, nact]
@@ -56,6 +75,8 @@ class Buffer(object):
             same for the other things
 
             still stored in rows so we can sample uniformly from games, then from that game
+
+            also, see in init: "The New Deal"
         """
 
         if self.enc_obs is None:
@@ -78,23 +99,6 @@ class Buffer(object):
         self.mus[self.next_idx] = mus
         self.dones[self.next_idx] = dones
         # self.masks[self.next_idx] = masks
-
-        # TEST CODE for storing these on disk instad
-        # conclusion: not a great idea because it takes 0.13285534381866454 sec on average
-        #   to load enc_obs 1434 long
-        '''
-        from IPython import embed; embed()
-
-        with open('test.np', 'wb') as f:
-            np.save(f, enc_obs)
-
-        from time import time
-        start = time()
-        for i in range(10):
-            with open('test.np', 'rb') as f:
-                eo = np.load(f)
-        end = time()
-        '''
 
         self.next_idx = (self.next_idx + 1) % self.size
         self.num_in_buffer = min(self.size, self.num_in_buffer + 1)
@@ -136,61 +140,24 @@ class Buffer(object):
         masks = None
         return obs, actions, rewards, mus, dones, masks
 
+    def update_buffers():
+        # sample new replays from disk
+        #   takes 0.13285534381866454 sec on average to load enc_obs 1434 long
+        path = './sync/'
+        replay_filenames = [f for f in listdir(path) if isfile(join(path, f)) and '.phlt' in f]
 
+        for filename in sample(replay_filenames, self.size):
+            with open(filename, 'rb') as f:
+                enc_obs, actions, rewards, mus, dones = np.load(f)
+                self.put(self, enc_obs, actions, rewards, mus, dones)
 
-def _stack_obs_ref(enc_obs, dones, nsteps):
-    nenv = enc_obs.shape[0]
-    nstack = enc_obs.shape[1] - nsteps
-    nh, nw, nc = enc_obs.shape[2:]
-    obs_dtype = enc_obs.dtype
-    obs_shape = (nh, nw, nc*nstack)
+        # now update disk last to avoid concurrency problems
+        # well, first have to check if the last one is done: poll() checks if process is still running
+        while self.current_proc is not None and self.current_proc.poll() is not None:
+            # not done yet!
+            print("waiting on the last one to finish! darn. increase replay_ratio maybe?")
+            # wait n seconds
+            time.sleep(1)
 
-    mask = np.empty([nsteps + nstack - 1, nenv, 1, 1, 1], dtype=np.float32)
-    obs = np.zeros([nstack, nsteps + nstack, nenv, nh, nw, nc], dtype=obs_dtype)
-    x = np.reshape(enc_obs, [nenv, nsteps + nstack, nh, nw, nc]).swapaxes(1, 0)  # [nsteps + nstack, nenv, nh, nw, nc]
+        self.current_proc = subprocess.Popen(['./update_replays.sh'])
 
-    mask[nstack-1:] = np.reshape(1.0 - dones, [nenv, nsteps, 1, 1, 1]).swapaxes(1, 0)  # keep
-    mask[:nstack-1] = 1.0
-
-    # y = np.reshape(1 - dones, [nenvs, nsteps, 1, 1, 1])
-    for i in range(nstack):
-        obs[-(i + 1), i:] = x
-        # obs[:,i:,:,:,-(i+1),:] = x
-        x = x[:-1] * mask
-        mask = mask[1:]
-
-    return np.reshape(obs[:, (nstack-1):].transpose((2, 1, 3, 4, 0, 5)), (nenv, (nsteps + 1)) + obs_shape)
-
-def _stack_obs(enc_obs, dones, nsteps):
-    nenv = enc_obs.shape[0]
-    nstack = enc_obs.shape[1] - nsteps
-    nc = enc_obs.shape[-1]
-
-    obs_ = np.zeros((nenv, nsteps + 1) + enc_obs.shape[2:-1] + (enc_obs.shape[-1] * nstack, ), dtype=enc_obs.dtype)
-    mask = np.ones((nenv, nsteps+1), dtype=enc_obs.dtype)
-    mask[:, 1:] = 1.0 - dones
-    mask = mask.reshape(mask.shape + tuple(np.ones(len(enc_obs.shape)-2, dtype=np.uint8)))
-
-    for i in range(nstack-1, -1, -1):
-        obs_[..., i * nc : (i + 1) * nc] = enc_obs[:, i : i + nsteps + 1, :]
-        if i < nstack-1:
-            obs_[..., i * nc : (i + 1) * nc] *= mask
-            mask[:, 1:, ...] *= mask[:, :-1, ...]
-
-    return obs_
-
-def test_stack_obs():
-    nstack = 7
-    nenv = 1
-    nsteps = 5
-
-    obs_shape = (2, 3, nstack)
-
-    enc_obs_shape = (nenv, nsteps + nstack) + obs_shape[:-1] + (1,)
-    enc_obs = np.random.random(enc_obs_shape)
-    dones = np.random.randint(low=0, high=2, size=(nenv, nsteps))
-
-    stacked_obs_ref = _stack_obs_ref(enc_obs, dones, nsteps=nsteps)
-    stacked_obs_test = _stack_obs(enc_obs, dones, nsteps=nsteps)
-
-    np.testing.assert_allclose(stacked_obs_ref, stacked_obs_test)

@@ -237,7 +237,7 @@ class Acer():
         self.buffer = buffer
         self.log_interval = log_interval
         self.tstart = None
-        self.episode_stats = EpisodeStats(runner.nsteps, runner.nenv)
+        # self.episode_stats = EpisodeStats(runner.nsteps, runner.nenv)
         self.steps = None
         self.nsteps = nsteps
 
@@ -245,15 +245,19 @@ class Acer():
         runner, model, buffer, steps = self.runner, self.model, self.buffer, self.steps
         if on_policy:
             # enc_obs, obs, actions, rewards, mus, dones, masks = runner.run()
-            # INSTEAD: read new replays that the minion uploaded and output weights for them
-            
-            if len(dones) >= self.nsteps:
-                try:
-                    self.episode_stats.feed(rewards[-self.nsteps:], dones[-self.nsteps:])
-                except:
-                    from IPython import embed; embed()
-            if buffer is not None:
-                buffer.put(enc_obs, actions, rewards, mus, dones, masks)
+            # if len(dones) >= self.nsteps:
+            #     try:
+            #         self.episode_stats.feed(rewards[-self.nsteps:], dones[-self.nsteps:])
+            #     except:
+            #         from IPython import embed; embed()
+            # if buffer is not None:
+            #     buffer.put(enc_obs, actions, rewards, mus, dones, masks)
+
+            # INSTEAD: read new replays that the minion uploaded and output weights for them.
+            #   also, update the minions' params
+            model.save("actor.ckpt")
+            buffer.update_buffers()
+
         # else:
             # get obs, actions, rewards, mus, dones from buffer.
         obs, actions, rewards, mus, dones, masks = buffer.get()
@@ -277,8 +281,8 @@ class Acer():
             # IMP: In EpisodicLife env, during training, we get done=True at each loss of life, not just at the terminal state.
             # Thus, this is mean until end of life, not end of episode.
             # For true episode rewards, see the monitor files in the log folder.
-            logger.record_tabular("mean_episode_length", self.episode_stats.mean_length())
-            logger.record_tabular("mean_episode_reward", self.episode_stats.mean_reward())
+            # logger.record_tabular("mean_episode_length", self.episode_stats.mean_length())
+            # logger.record_tabular("mean_episode_reward", self.episode_stats.mean_reward())
             for name, val in zip(names_ops, values_ops):
                 logger.record_tabular(name, float(val))
             logger.dump_tabular()
@@ -387,7 +391,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
         params = json.load(f)
 
     params["replay_start"] = min(params["replay_start"], params["buffer_size"])
-    params["memory_buffer_size"] = min(params["memory_buffer_size"], params["disk_buffer_size"])
+    params["buffer_size"] = min(params["buffer_size"], params["disk_buffer_size"])
 
     for k, v in params.items():
         if k in learn_params:
@@ -406,7 +410,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
 
     runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
     if replay_ratio > 0:
-        buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size)
+        buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size, disk_size=disk_buffer_size)
     else:
         buffer = None
     nbatch = nenvs*nsteps
