@@ -179,8 +179,6 @@ while True:
             me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
 
         # documentation ?
-        if not ITS_THE_REAL_DEAL:
-            logging.info("mu:"+json.dumps(frame_mus))
         benchmark.benchmark("ship {} turn stats".format(ship.id))
 
 
@@ -191,6 +189,8 @@ while True:
         command_queue.append(me.shipyard.spawn())
 
 
+    if not ITS_THE_REAL_DEAL:
+        logging.info("mu:"+json.dumps(frame_mus))
     benchmark.benchmark("end turn")
     # Send your moves back to the game environment, ending this turn.
     game.end_turn(command_queue)
