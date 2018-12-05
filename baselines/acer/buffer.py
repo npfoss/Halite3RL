@@ -140,13 +140,13 @@ class Buffer(object):
         masks = None
         return obs, actions, rewards, mus, dones, masks
 
-    def update_buffers():
+    def update_buffers(self):
         # sample new replays from disk
         #   takes 0.13285534381866454 sec on average to load enc_obs 1434 long
         path = './sync/'
         replay_filenames = [f for f in listdir(path) if isfile(join(path, f)) and '.phlt' in f]
 
-        for filename in sample(replay_filenames, self.size):
+        for filename in sample(replay_filenames, self.num_in_buffer):
             with open(filename, 'rb') as f:
                 g = io.BytesIO()
                 g.write(zstd.uncompress(f.read()))

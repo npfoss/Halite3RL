@@ -393,6 +393,8 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
     params["replay_start"] = min(params["replay_start"], params["buffer_size"])
     params["buffer_size"] = min(params["buffer_size"], params["disk_buffer_size"])
 
+    nsteps , buffer_size , disk_buffer_size = params['nsteps'] , params['buffer_size'] , params['disk_buffer_size']
+
     for k, v in params.items():
         if k in learn_params:
             learn_params[k] = v
@@ -404,7 +406,8 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
 
     env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
 
-    runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
+    # runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
+    runner = HaliteRunner() # reads the params json now
     if replay_ratio > 0:
         buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size, disk_size=disk_buffer_size)
     else:
