@@ -36,4 +36,3 @@ fi
 unzip Halite3_Python3.zip -d tmp_halite
 mv tmp_halite/halite .
 rm -rf tmp_halite/ Halite3_Python3.zip
-
