@@ -100,4 +100,6 @@ class HaliteRunner:
         # # When pulling from buffer, arrays will now be reshaped in place, preventing a deep copy.
 
         return enc_obs, mb_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks
+        # actuall, np.save them instead
+
 

@@ -395,6 +395,9 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
 
     # print(locals())
 
+    # if is_actor:
+    #     while True:
+    #         runner.run()
 
     with open("model_params.pkl", "wb") as f:
         pkl.dump(learn_params, f)
