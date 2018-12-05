@@ -378,19 +378,23 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
     '''
     print("Running Acer Simple")
 
-    with open("params.json") as f:
-        for k, v in json.load(f).items():
-            locals()[k] = v
-
-    replay_start = min(replay_start, buffer_size)
-    memory_buffer_size = min(memory_buffer_size, disk_buffer_size)
-
-    # print(locals())
-
     learn_params = {"network": network, "seed": seed, "nsteps": nsteps, "total_timesteps": total_timesteps, "q_coef": q_coef, "ent_coef": ent_coef,
         "max_grad_norm": max_grad_norm, "lr": lr, "lrschedule": lrschedule, "rprop_epsilon": rprop_epsilon, "rprop_alpha": rprop_alpha, "gamma": gamma,
         "log_interval": log_interval, "buffer_size": buffer_size, "replay_ratio": replay_ratio, "replay_start": replay_start, "c": c,
         "trust_region": trust_region, "alpha": alpha, "delta": delta, "load_path": load_path, **network_kwargs}
+
+    with open("params.json") as f:
+        params = json.load(f)
+
+    params["replay_start"] = min(params["replay_start"], params["buffer_size"])
+    params["memory_buffer_size"] = min(params["memory_buffer_size"], params["disk_buffer_size"])
+
+    for k, v in params.items():
+        if k in learn_params:
+            learn_params[k] = v
+
+    # print(locals())
+
 
     with open("model_params.pkl", "wb") as f:
         pkl.dump(learn_params, f)
