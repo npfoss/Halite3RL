@@ -9,7 +9,7 @@ if [ ! -d dependencies/baselines/acer ]; then
 fi
 cd dependencies
 
-pip install --no-dependencies --target . dill gym joblib
-pip install --no-dependencies --target baselines/acer dill
+pip3 install --no-dependencies --target . dill gym joblib
+pip3 install --no-dependencies --target baselines/acer dill
 
 zip -r ../halite.zip *

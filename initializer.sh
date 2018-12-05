@@ -13,7 +13,7 @@ cd ..
 
 
 # install script
-pip install tensorflow scipy zstd gym dill gym[atari] joblib
+pip3 install tensorflow scipy zstd gym dill gym[atari] joblib
 
 # find the OS
 unameOut="$(uname -s)"
