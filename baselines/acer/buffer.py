@@ -157,7 +157,7 @@ class Buffer(object):
 
         # now update disk last to avoid concurrency problems
         # well, first have to check if the last one is done: poll() checks if process is still running
-        while self.current_proc is not None and self.current_proc.poll() is not None:
+        while self.current_proc is not None and self.current_proc.poll() is None:
             # not done yet!
             print("waiting on the last one to finish! darn. increase replay_ratio maybe?")
             # wait n seconds
