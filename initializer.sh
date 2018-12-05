@@ -29,14 +29,12 @@ echo ${machine}
 
 if [ "$machine" = "Mac" ]
 then
-    curl -O https://halite.io/assets/downloads/Halite3_Python3_MacOS.zip
-    unzip Halite3_Python3_MacOS.zip -d tmp_halite
-    mv tmp_halite/halite .
-    rm -rf tmp_halite/ Halite3_Python3_MacOS.zip
+    curl https://halite.io/assets/downloads/Halite3_Python3_MacOS.zip > Halite3_Python3.zip
 else
-    curl -O https://halite.io/assets/downloads/Halite3_Python3_Linux-AMD64.zip
-    unzip Halite3_Python3_Linux-AMD64.zip -d tmp_halite
-    mv tmp_halite/halite .
-    rm -rf tmp_halite/ Halite3_Python3_Linux-AMD64.zip
+    curl https://halite.io/assets/downloads/Halite3_Python3_Linux-AMD64.zip > Halite3_Python3.zip
 fi
+
+unzip Halite3_Python3.zip -d tmp_halite
+mv tmp_halite/halite .
+rm -rf tmp_halite/ Halite3_Python3.zip
 
