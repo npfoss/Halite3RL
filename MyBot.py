@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # Python 3.6
 
+exporation_proportion = 0.1
+
 from benchmarking import benchmarker
 from unittest.mock import Mock
 benchmark = benchmarker(printer=lambda x: None, warner=lambda x: None)
@@ -16,6 +18,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # check if it's the real deal or just learning mode:
 ITS_THE_REAL_DEAL = '--learning=true' not in sys.argv
+if ITS_THE_REAL_DEAL:
+	exporation_proportion = 0
 
 # Import the Halite SDK, which will let you interact with the game.
 import hlt
@@ -37,6 +41,7 @@ from baselines.common.tf_util import load_variables
 
 import dill as pkl
 import json
+import random
 
 benchmark.benchmark("imports")
 
@@ -160,7 +165,7 @@ while True:
         # TODO: save mus (could just use log file!)
         benchmark.benchmark("ran model")
         frame_mus[ship.id] = [float(mu) for mu in mus[0]]
-        action = actions[0]
+        action = random.randrange(5) if random.random() < exporation_proportion else actions[0]
         if action < 4:# and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
             command_queue.append(
                 ship.move(
