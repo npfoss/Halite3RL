@@ -101,7 +101,7 @@ class HaliteRunner:
 
         #return enc_obs, mb_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks
         # actuall, np.save them instead
-        with open(str(int(time.time()*1e9)) + "_" + str(uuid.uuid4())+".phlt", "wb+") as f:
+        with open("sync/replays/"+str(int(time.time()*1e9)) + "_" + str(uuid.uuid4())+".phlt", "wb+") as f:
             np.save(f, np.array([enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones]))
 
 if __name__ == "__main__":
