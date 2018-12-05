@@ -1,6 +1,7 @@
 #! /bin/sh
 
 # download clones, set up git
+git config credential.helper store
 git clone https://github.com/npfoss/Halite3RL.git
 cd Halite3RL
 git clone https://github.com/kentslaney/Halite3RL_sync sync
