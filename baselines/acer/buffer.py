@@ -163,5 +163,5 @@ class Buffer(object):
             # wait n seconds
             time.sleep(1)
 
-        self.current_proc = subprocess.Popen(['./update_replays.sh'])
+        self.current_proc = subprocess.Popen(['sh', 'update_replays.sh'])
 

@@ -10,11 +10,10 @@ current_proc = None
 while True:
     for i in range(runs):
         runner.run()
-        print(i)
-    while current_proc is not None and current_proc.poll() is not None:
+    while current_proc is not None and current_proc.poll() is None:
         # not done yet!
         print("waiting on previous upload")
         # wait n seconds
         time.sleep(1)
-    current_proc = subprocess.Popen(['./actor_upload.sh'])
+    current_proc = subprocess.Popen(['sh', 'actor_upload.sh'])
 
