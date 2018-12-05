@@ -1,4 +1,5 @@
 import time
+import json
 import functools
 import numpy as np
 import tensorflow as tf
@@ -377,10 +378,12 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
     '''
     print("Running Acer Simple")
 
-    buffer_size = 4 # number of games (now that I've changed buffer.py)
-    replay_start = 4
+    with open("params.json") as f:
+        for k, v in json.load(f).items():
+            locals()[k] = v
+
     replay_start = min(replay_start, buffer_size)
-    replay_ratio = 40
+    memory_buffer_size = min(memory_buffer_size, disk_buffer_size)
 
     # print(locals())
 
@@ -389,7 +392,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
         "log_interval": log_interval, "buffer_size": buffer_size, "replay_ratio": replay_ratio, "replay_start": replay_start, "c": c,
         "trust_region": trust_region, "alpha": alpha, "delta": delta, "load_path": load_path, **network_kwargs}
 
-    with open("params.pkl", "wb") as f:
+    with open("model_params.pkl", "wb") as f:
         pkl.dump(learn_params, f)
 
     env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
