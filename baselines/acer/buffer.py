@@ -3,6 +3,9 @@ import subprocess
 from os import listdir
 from os.path import isfile, join
 from random import sample
+import time
+import zstd
+import io
 
 class Buffer(object):
     # gets obs, actions, rewards, mu's, (states, masks), dones
@@ -143,17 +146,17 @@ class Buffer(object):
     def update_buffers(self):
         # sample new replays from disk
         #   takes 0.13285534381866454 sec on average to load enc_obs 1434 long
-        path = './sync/'
+        path = './sync/replays'
         replay_filenames = [f for f in listdir(path) if isfile(join(path, f)) and '.phlt' in f]
 
-        for filename in sample(replay_filenames, self.num_in_buffer):
-            with open(filename, 'rb') as f:
+        for filename in sample(replay_filenames, min(self.size, len(replay_filenames))):
+            with open(join(path, filename), 'rb') as f:
                 g = io.BytesIO()
                 g.write(zstd.uncompress(f.read()))
                 g.seek(0)
                 data = np.load(g)
                 enc_obs, actions, rewards, mus, dones = (data[i] for i in data)
-                self.put(self, enc_obs, actions, rewards, mus, dones)
+                self.put(enc_obs, actions, rewards, mus, dones)
 
         # now update disk last to avoid concurrency problems
         # well, first have to check if the last one is done: poll() checks if process is still running

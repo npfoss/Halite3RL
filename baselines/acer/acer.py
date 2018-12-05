@@ -412,6 +412,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
         buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size, disk_size=disk_buffer_size)
     else:
         buffer = None
+    buffer.update_buffers()
     nbatch = nenvs*nsteps
     acer = Acer(runner, model, buffer, log_interval, nsteps)
     acer.tstart = time.time()
