@@ -243,7 +243,9 @@ class Acer():
     def call(self, on_policy):
         runner, model, buffer, steps = self.runner, self.model, self.buffer, self.steps
         if on_policy:
-            enc_obs, obs, actions, rewards, mus, dones, masks = runner.run()
+            # enc_obs, obs, actions, rewards, mus, dones, masks = runner.run()
+            # INSTEAD: read new replays that the minion uploaded and output weights for them
+            
             if len(dones) >= self.nsteps:
                 try:
                     self.episode_stats.feed(rewards[-self.nsteps:], dones[-self.nsteps:])
