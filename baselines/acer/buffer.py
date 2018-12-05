@@ -148,7 +148,10 @@ class Buffer(object):
 
         for filename in sample(replay_filenames, self.size):
             with open(filename, 'rb') as f:
-                data = np.load(f)
+                g = io.BytesIO()
+                g.write(zstd.uncompress(f.read()))
+                g.seek(0)
+                data = np.load(g)
                 enc_obs, actions, rewards, mus, dones = (data[i] for i in data)
                 self.put(self, enc_obs, actions, rewards, mus, dones)
 
