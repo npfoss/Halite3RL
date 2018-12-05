@@ -19,7 +19,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # check if it's the real deal or just learning mode:
 ITS_THE_REAL_DEAL = '--learning=true' not in sys.argv
 if ITS_THE_REAL_DEAL:
-	exporation_proportion = 0
+    exporation_proportion = 0
 
 # Import the Halite SDK, which will let you interact with the game.
 import hlt
@@ -45,7 +45,7 @@ import random
 
 benchmark.benchmark("imports")
 
-with open("params.pkl", "rb") as f:
+with open("model_params.pkl", "rb") as f:
     learn_params = pkl.load(f)
     env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
 
