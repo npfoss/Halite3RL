@@ -48,6 +48,7 @@ class HaliteRunner:
             replay = load_replay(replay_file_name, player)
 
             eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
+            assert not np.isnan(m[0]), 'mus are null!!! :('
 
             if enc_obs is None:
                 enc_obs = eo
