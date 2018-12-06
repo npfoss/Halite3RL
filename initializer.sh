@@ -4,12 +4,17 @@
 git config credential.helper store
 git clone https://github.com/npfoss/Halite3RL.git
 cd Halite3RL
+git config credential.helper store
 git clone https://github.com/kentslaney/Halite3RL_sync sync
 cd sync
 git config user.name "RLaDOS"
-git remote set-url origin https://RLaDOS:538allspelledout@github.com/kentslaney/Halite3RL_sync #DO NOT STEAL PLZ
+# git remote set-url origin https://RLaDOS:538allspelledout@github.com/kentslaney/Halite3RL_sync #DO NOT STEAL PLZ
 cd ..
 
+sudo add-apt-repository universe
+sudo apt-get update
+sudo apt install python3-pip -y
+sudo apt install unzip
 
 # install script
 pip3 install tensorflow scipy zstd gym dill joblib
