@@ -21,13 +21,16 @@ def localize_matrix(m, new_length, old_center_y, old_center_x):
                        new_center_x - short_edge: new_center_x + long_edge + 1]
     return centered_m 
 
-def load_replay(file_name, player_id):
+def load_replay(file_name, player_id, mus_are_known = True):
     player_id = str(player_id)
     parsed_frames = []
     with open(file_name, 'rb') as f:
         data = json.loads(zstd.loads(f.read()).decode("utf-8"))
 
-    game_mus = read_mus(player_id)
+    if mus_are_known:
+        game_mus = read_mus(player_id)
+    else:
+        game_mus = fake_mus(player_id, data)
 
     '''
     Notes on replay format (keys of data['full_frames']):
@@ -68,10 +71,10 @@ def load_replay(file_name, player_id):
     # ***** Update for each frame ***** 
     for t in range(actual_turns):
         frame = data['full_frames'][t]
-        
         frame_mus = ([] if t == 0 else game_mus[t - 1]) if t <= len(game_mus) else \
             {j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
 
+ 
         # Generate matrices for this turn 
         old_halite = np.copy(halite)
         friendly_ships = np.zeros((board_size, board_size), dtype = np.int32)
@@ -216,6 +219,18 @@ def read_mus(player_id):
 
     return mus
 
+def fake_mus(player_id, data):
+    uniform_mus = np.ones(6)/6
+    mus_len = len(data['full_frames']) - 2
+    mus=[]
+    for t in range(mus_len):
+        if player_id in data['full_frames'][t+1]['entities']:
+            entity_list =data['full_frames'][t+1]['entities'][player_id]
+            mus.append({j:uniform_mus for i in entity_list for j in entity_list})
+        else:
+            mus.append([])
+    return mus
+
 def gen_rewards(state, ship_info, survives):
     # magic numbers
     ship_pickup_multiplier = 0.25
@@ -230,7 +245,7 @@ def gen_rewards(state, ship_info, survives):
     return ship_info["energy_delta"] * ship_pickup_multiplier + dropped_off * (1 - ship_pickup_multiplier)
 
 def gen_obs(state, ship_pos):
-    """
+    """g
     takes in the state (in replay-generated json format but also from the game)
     returns (64, 64, 7) tensor a la halite_env.py observation_space
     """
