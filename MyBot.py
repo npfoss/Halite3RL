@@ -165,7 +165,11 @@ while True:
         # TODO: save mus (could just use log file!)
         benchmark.benchmark("ran model")
         frame_mus[ship.id] = [float(mu) for mu in mus[0]]
-        action = random.randrange(5) if random.random() < exporation_proportion else actions[0]
+        if random.random() < exporation_proportion:
+            action = random.randrange(5)
+            logging.info('Moving randomly')
+        else:
+            action = actions[0]
         if action < 4:# and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
             command_queue.append(
                 ship.move(
