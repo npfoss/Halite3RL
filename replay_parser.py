@@ -23,7 +23,7 @@ def localize_matrix(m, new_length, old_center_y, old_center_x):
                        new_center_x - short_edge: new_center_x + long_edge + 1]
     return centered_m
 
-def load_replay(file_name, player_id, mus_are_known = True):
+def load_replay(file_name, player_id, mus_are_known=True):
     player_id = str(player_id)
     parsed_frames = []
     with open(file_name, 'rb') as f:
@@ -32,7 +32,7 @@ def load_replay(file_name, player_id, mus_are_known = True):
     if mus_are_known:
         game_mus = read_mus(player_id)
     else:
-        game_mus = fake_mus(player_id, data)
+        game_mus = None#fake_mus(player_id, data)
 
     '''
     Notes on replay format (keys of data['full_frames']):
@@ -73,8 +73,9 @@ def load_replay(file_name, player_id, mus_are_known = True):
     # ***** Update for each frame *****
     for t in range(actual_turns):
         frame = data['full_frames'][t]
-        frame_mus = ([] if t == 0 else game_mus[t - 1]) if t <= len(game_mus) else \
-            {j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
+        if mus_are_known:
+            frame_mus = ([] if t == 0 else game_mus[t - 1]) if t <= len(game_mus) else \
+                {j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
 
 
         # Generate matrices for this turn
@@ -132,7 +133,7 @@ def load_replay(file_name, player_id, mus_are_known = True):
                             moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
                     friendly_ships[y][x] = 1
                     friendly_ships_halite[y][x] = energy
-                    ship_info[entity_id]["mus"] = np.array(frame_mus[entity_id], dtype=np.float32)
+                    ship_info[entity_id]["mus"] = np.array(frame_mus[entity_id], dtype=np.float32) if mus_are_known else None
                 else: # enemy
                     enemy_ships[y][x] = 1
                     enemy_ships_halite[y][x] = energy
