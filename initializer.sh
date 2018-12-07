@@ -8,7 +8,6 @@ git config credential.helper store
 git clone https://github.com/kentslaney/Halite3RL_sync sync
 cd sync
 git config user.name "RLaDOS"
-# git remote set-url origin https://RLaDOS:538allspelledout@github.com/kentslaney/Halite3RL_sync #DO NOT STEAL PLZ
 cd ..
 
 sudo add-apt-repository universe
