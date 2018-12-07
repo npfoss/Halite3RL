@@ -21,6 +21,7 @@ from baselines.acer.halite_env import HaliteEnv
 
 import dill as pkl
 
+import os
 from using_tpus import USING_TPUS
 if USING_TPUS:
     from tensorflow.contrib import tpu
