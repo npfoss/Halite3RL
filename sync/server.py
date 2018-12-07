@@ -53,7 +53,7 @@ def download_weights():
 @app.route('/list/replays')
 @secret
 def list():
-	return json.dumps([i.rsplit('.', 1)[0] for i in os.listdir(replays_folder)])
+	return "\n".join([i.rsplit('.', 1)[0] for i in os.listdir(replays_folder)])
 
 if __name__ == "__main__":
 	if not os.path.exists(replays_folder):

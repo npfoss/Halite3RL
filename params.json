@@ -7,5 +7,6 @@
     "nsteps": 20,
     "actor_runs_per_upload": 2,
     "pull_frequency": 300,
-    "secret": "b02c29dc-606b-4f1e-8497-39c7e30c84b0"
+    "secret": "b02c29dc-606b-4f1e-8497-39c7e30c84b0",
+    "base_url": "https://tracksingles.com"
 }
