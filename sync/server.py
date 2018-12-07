@@ -6,6 +6,8 @@ relpath = lambda path: os.path.join(os.path.dirname(os.path.realpath(__file__)),
 replays_folder = relpath("replays")
 weights_file = relpath("actor.ckpt")
 
+app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
+
 with open(relpath("../params.json")) as f:
 	params = json.load(f)
 
