@@ -165,9 +165,9 @@ while True:
         # TODO: save mus (could just use log file!)
         if not ITS_THE_REAL_DEAL: benchmark.benchmark("ran model")
         frame_mus[ship.id] = [float(mu) for mu in mus[0]]
-        if random.random() < exporation_proportion:
-            action = random.randrange(5)
-            if not ITS_THE_REAL_DEAL: logging.info('Moving randomly')
+        if not ITS_THE_REAL_DEAL and random.random() < exporation_proportion:
+            action = random.randrange(4) # NOTE: making this 4 excludes dropoffs
+            logging.info('Moving randomly')
         else:
             action = actions[0]
         if action < 4:# and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
