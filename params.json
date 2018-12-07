@@ -5,5 +5,6 @@
     "replay_ratio": 100,
     "gamma": 0.99,
     "nsteps": 20,
-    "actor_runs_per_upload": 2
+    "actor_runs_per_upload": 2,
+    "pull_frequency": 300
 }
