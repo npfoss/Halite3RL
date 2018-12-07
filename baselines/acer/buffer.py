@@ -73,7 +73,7 @@ class Buffer(object):
         # mus [nenv, nsteps, nact]
 
         """ NEW BUFFER stuff:
-            
+
             enc_obs: long concatenated list of ship traces for a single game (?, 64, 64, 7)
             same for the other things
 
@@ -146,7 +146,7 @@ class Buffer(object):
     def update_buffers(self):
         # sample new replays from disk
         #   takes 0.13285534381866454 sec on average to load enc_obs 1434 long
-        path = './sync/replays'
+        path = './replays'
         replay_filenames = [f for f in listdir(path) if isfile(join(path, f)) and '.phlt' in f]
 
         for filename in sample(replay_filenames, min(self.size, len(replay_filenames))):
