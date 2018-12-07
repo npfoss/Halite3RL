@@ -8,6 +8,7 @@ replays/
 halite.zip
 dependencies/
 nohup.out
+using_tpus.py
 
 ##########
 # Python #
