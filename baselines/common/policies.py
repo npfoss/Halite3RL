@@ -9,6 +9,11 @@ from baselines.common.models import get_network_builder
 
 import gym
 
+from using_tpus import USING_TPUS
+if USING_TPUS:
+    from tensorflow.contrib import tpu
+
+
 
 class PolicyWithValue(object):
     """
@@ -72,7 +77,10 @@ class PolicyWithValue(object):
                 if isinstance(inpt, tf.Tensor) and inpt._op.type == 'Placeholder':
                     feed_dict[inpt] = adjust_shape(inpt, data)
 
-        return sess.run(variables, feed_dict)
+        if USING_TPUS:
+            return sess.run(tpu.rewrite(variables, feed_dict))
+        else:
+            return sess.run(variables, feed_dict)
 
     def step(self, observation, **extra_feed):
         """
