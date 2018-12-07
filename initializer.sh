@@ -5,10 +5,10 @@ git config credential.helper store
 git clone https://github.com/npfoss/Halite3RL.git
 cd Halite3RL
 git config credential.helper store
-git clone https://github.com/kentslaney/Halite3RL_sync sync
-cd sync
-git config user.name "RLaDOS"
-cd ..
+# git clone https://github.com/kentslaney/Halite3RL_sync sync
+# cd sync
+# git config user.name "RLaDOS"
+# cd ..
 
 sudo add-apt-repository universe
 sudo apt-get update
