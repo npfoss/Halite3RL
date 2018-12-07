@@ -7,7 +7,6 @@ replays/
 *.log
 halite.zip
 dependencies/
-sync/
 nohup.out
 
 ##########
