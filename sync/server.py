@@ -12,7 +12,6 @@ with open(relpath("../params.json")) as f:
 def secret(f):
 	@functools.wraps(f)
 	def wrapper(*args, **kwargs):
-		print('check')
 		if request.args.get('secret') == params["secret"]:
 			return f(*args, **kwargs)
 		else:
