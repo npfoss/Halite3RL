@@ -133,7 +133,8 @@ def load_replay(file_name, player_id, mus_are_known=True):
                             moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
                     friendly_ships[y][x] = 1
                     friendly_ships_halite[y][x] = energy
-                    ship_info[entity_id]["mus"] = np.array(frame_mus[entity_id], dtype=np.float32) if mus_are_known else None
+                    assert (not mus_are_known or t == 0 or t >= actual_turns-1 or frame_mus[entity_id] is not None) , "mus are none!! :("
+                    ship_info[entity_id]["mus"] = np.array(frame_mus[entity_id], dtype=np.float32) if mus_are_known else np.array([np.nan])
                 else: # enemy
                     enemy_ships[y][x] = 1
                     enemy_ships_halite[y][x] = energy
@@ -289,4 +290,3 @@ if __name__ == "__main__":
     obs = load_replay("replays/replay-20181207-160318-0500-1544216591-32-32.hlt", "1")
     replay_to_enc_obs_n_stuff(obs, HaliteEnv(), 0.99)
 
-    ...

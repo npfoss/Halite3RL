@@ -424,7 +424,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
     # ***
 
     # runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
-    runner = HaliteRunner() # reads the params json now
+    runner = HaliteRunner(model) # reads the params json now
     if replay_ratio > 0:
         buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size, disk_size=disk_buffer_size)
     else:

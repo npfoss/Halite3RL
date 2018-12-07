@@ -1,11 +1,12 @@
 {
     "disk_buffer_size": 250,
-    "buffer_size": 7,
+    "buffer_size": 12,
     "replay_start": 4,
     "replay_ratio": 100,
     "gamma": 0.99,
     "nsteps": 20,
     "actor_runs_per_upload": 2,
     "secret": "b02c29dc-606b-4f1e-8497-39c7e30c84b0",
-    "base_url": "https://tracksingles.com"
+    "base_url": "https://tracksingles.com",
+    "min_phlt_size_kinda": 4000
 }
