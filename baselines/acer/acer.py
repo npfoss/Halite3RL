@@ -21,6 +21,8 @@ from baselines.acer.halite_env import HaliteEnv
 
 import dill as pkl
 
+from using_tpus import USING_TPUS
+
 # remove last step
 def strip(var, nenvs, nsteps, flat = False):
     vars = batch_to_seq(var, nenvs, nsteps + 1, flat)
@@ -64,7 +66,11 @@ class Model(object):
                  rprop_alpha, rprop_epsilon, total_timesteps, lrschedule,
                  c, trust_region, alpha, delta):
 
-        sess = get_session()
+        if USING_TPUS:
+            tpu_grpc_url = TPUClusterResolver(tpu=[os.environ['TPU_NAME']]).get_master()
+            
+        else:
+            sess = get_session()
         nact = ac_space.n
         nbatch = nenvs * nsteps
 
