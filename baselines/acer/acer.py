@@ -22,6 +22,9 @@ from baselines.acer.halite_env import HaliteEnv
 import dill as pkl
 
 from using_tpus import USING_TPUS
+if USING_TPUS:
+    from tensorflow.contrib import tpu
+    from tensorflow.contrib.cluster_resolver import TPUClusterResolver
 
 # remove last step
 def strip(var, nenvs, nsteps, flat = False):
@@ -68,7 +71,8 @@ class Model(object):
 
         if USING_TPUS:
             tpu_grpc_url = TPUClusterResolver(tpu=[os.environ['TPU_NAME']]).get_master()
-            
+            sess = tf.Session(tpu_grpc_url)
+            sess.run(tpu.initialize_system())
         else:
             sess = get_session()
         nact = ac_space.n
@@ -218,7 +222,10 @@ class Model(object):
                 td_map[polyak_model.S] = states
                 td_map[polyak_model.M] = masks
 
-            return names_ops, sess.run(run_ops, td_map)[1:]  # strip off _train
+            if USING_TPUS:
+                return names_ops, sess.run(tpu.rewrite(run_ops, td_map))[1:]  # strip off _train
+            else:
+                return names_ops, sess.run(run_ops, td_map)[1:]  # strip off _train
 
         def _step(observation, **kwargs):
             return step_model._evaluate([step_model.action, step_model_p, step_model.state], observation, **kwargs)

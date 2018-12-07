@@ -28,14 +28,17 @@ class AcerCnnPolicy(object):
 
         def step(ob, *args, **kwargs):
             # returns actions, mus, states
+            assert False , "oops, I guess this is actually used... which means you need to do the TPU thing here!"
             a0, pi0 = sess.run([a, pi], {X: ob})
             return a0, pi0, []  # dummy state
 
         def out(ob, *args, **kwargs):
+            assert False , "oops, I guess this is actually used... which means you need to do the TPU thing here!"
             pi0, q0 = sess.run([pi, q], {X: ob})
             return pi0, q0
 
         def act(ob, *args, **kwargs):
+            assert False , "oops, I guess this is actually used... which means you need to do the TPU thing here!"
             return sess.run(a, {X: ob})
 
         self.step = step
@@ -75,6 +78,7 @@ class AcerLstmPolicy(object):
 
         def step(ob, state, mask, *args, **kwargs):
             # returns actions, mus, states
+            assert False , "oops, I guess this is actually used... which means you need to do the TPU thing here!"
             a0, pi0, s = sess.run([a, pi, snew], {X: ob, S: state, M: mask})
             return a0, pi0, s
 
