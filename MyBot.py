@@ -42,18 +42,18 @@ from baselines.common.tf_util import load_variables
 import dill as pkl
 import json
 import random
-
-benchmark.benchmark("imports")
+if not ITS_THE_REAL_DEAL:
+    benchmark.benchmark("imports")
 
 with open("model_params.pkl", "rb") as f:
     learn_params = pkl.load(f)
     env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
 
-benchmark.benchmark("create model")
+if not ITS_THE_REAL_DEAL: benchmark.benchmark("create model")
 
 load_variables("actor.ckpt")
 
-benchmark.benchmark("load weights")
+if not ITS_THE_REAL_DEAL: benchmark.benchmark("load weights")
 
 devnull.close()
 sys.stdout = oldstdout
@@ -71,13 +71,13 @@ game.ready("MyPythonBot")
 
 # Now that your bot is initialized, save a message to yourself in the log file with some important information.
 #   Here, you log here your id, which you can always fetch from the game object by using my_id.
-logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
+if not ITS_THE_REAL_DEAL: logging.info("Successfully created bot! My Player ID is {}.".format(game.my_id))
 board_length = game.game_map.width
 
-benchmark.end("init done")
-logging.info(str(benchmark))
-benchmark = benchmarker()
-benchmark.start()
+if not ITS_THE_REAL_DEAL: benchmark.end("init done")
+if not ITS_THE_REAL_DEAL: logging.info(str(benchmark))
+if not ITS_THE_REAL_DEAL: benchmark = benchmarker()
+if not ITS_THE_REAL_DEAL: benchmark.start()
 
 
 """ <<<Game Loop>>> """
@@ -87,7 +87,7 @@ while True:
     #   running update_frame().
     game.update_frame()
     # You extract player metadata and the updated map metadata here for convenience.
-    benchmark.benchmark("start turn")
+    if not ITS_THE_REAL_DEAL: benchmark.benchmark("start turn")
     me = game.me
     game_map = game.game_map
 
@@ -145,13 +145,13 @@ while True:
 
     frame_mus = {}
 
-    benchmark.benchmark("created env variables")
+    if not ITS_THE_REAL_DEAL: benchmark.benchmark("created env variables")
     for ship in me.get_ships():
 
         obs = gen_obs(state, {'x': ship.position.x, 'y': ship.position.y}) # (64,64,7)
         # print(halite.shape, obs.shape) # spoiler it's (32, 32, 1) (64, 64, 7)
 
-        benchmark.benchmark("generated observations")
+        if not ITS_THE_REAL_DEAL: benchmark.benchmark("generated observations")
 
         actions, mus, _ = model._step(obs)#, M=self.dones)
 
@@ -163,11 +163,11 @@ while True:
         ## mus: [[0.16987674 0.16746981 0.15873784 0.16824721 0.168809   0.16685943]] 
         ## states: []
         # TODO: save mus (could just use log file!)
-        benchmark.benchmark("ran model")
+        if not ITS_THE_REAL_DEAL: benchmark.benchmark("ran model")
         frame_mus[ship.id] = [float(mu) for mu in mus[0]]
         if random.random() < exporation_proportion:
             action = random.randrange(5)
-            logging.info('Moving randomly')
+            if not ITS_THE_REAL_DEAL: logging.info('Moving randomly')
         else:
             action = actions[0]
         if action < 4:# and (game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full):
@@ -183,7 +183,7 @@ while True:
             me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
 
         # documentation ?
-        benchmark.benchmark("ship {} turn stats".format(ship.id))
+        if not ITS_THE_REAL_DEAL: benchmark.benchmark("ship {} turn stats".format(ship.id))
 
 
     # **** SPAWN RULE STUFF **** 
@@ -195,6 +195,6 @@ while True:
 
     if not ITS_THE_REAL_DEAL:
         logging.info("mu:"+json.dumps(frame_mus))
-    benchmark.benchmark("end turn")
+        benchmark.benchmark("end turn")
     # Send your moves back to the game environment, ending this turn.
     game.end_turn(command_queue)
