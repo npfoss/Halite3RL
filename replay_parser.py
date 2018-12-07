@@ -243,9 +243,11 @@ def gen_rewards(state, ship_info, survives):
         initial_halite = state["halite_map"][ship_info["pos"]["y"]][ship_info["pos"]["x"]]
         move_cost = round(0.1 * initial_halite)
         dropped_off = ship_info["energy"] - move_cost
+    elif (ship_info["action"] == 'c'):
+        dropped_off = state["halite_map"][ship_info["pos"]["y"]][ship_info["pos"]["x"]] + ship_info['energy'] - 4000
     else:
         dropped_off = 0
-    return ship_info["energy_delta"] * ship_pickup_multiplier + dropped_off * (1 - ship_pickup_multiplier)
+    return ship_info["energy_delta"] * ship_pickup_multiplier + dropped_off
 
 def gen_obs(state, ship_pos):
     """g
@@ -283,7 +285,7 @@ def enc_obs_to_obs(enc_obs):
 
 if __name__ == "__main__":
     # for debugging
-    obs = load_replay("replays/replay-20181206-213539-0500-1544150119-32-32.hlt", "0")
+    obs = load_replay("replays/replay-20181207-160318-0500-1544216591-32-32.hlt", "1")
     replay_to_enc_obs_n_stuff(obs, HaliteEnv(), 0.99)
 
     ...
