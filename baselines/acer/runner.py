@@ -48,7 +48,7 @@ class HaliteRunner:
             replay = load_replay(replay_file_name, player)
 
             eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
-            assert not np.isnan(m[0]), 'mus are null!!! :('
+            assert not np.isnan(m).any(), 'mus are null!!! :('
 
             if enc_obs is None:
                 enc_obs = eo
@@ -106,9 +106,22 @@ class HaliteRunner:
 
         #return enc_obs, mb_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks
         # actuall, np.save them instead
-        with open("sync/replays/"+str(int(time.time()*1e9)) + "_" + str(uuid.uuid4())+".phlt", "wb+") as f:
-            g = io.BytesIO()
-            np.savez(g, enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones)
-            g.seek(0)
-            f.write(zstd.compress(g.read()))
+        chunk_size = 8000
+        num_chunks = 1 + len(enc_obs)//chunk_size
+        done_indices = mb_dones.nonzero()[0]
+        cutoffs = [-1]
+        for index in range(1, num_chunks+ 1):
+            cutoffs.append(max(filter(lambda y: y<chunk_size*index, done_indices)))
+        for cutoff_index in range(1, len(cutoffs)):
+            start = cutoffs[cutoff_index - 1] + 1
+            end = cutoffs[cutoff_index] +1 
+            with open("sync/replays/"+str(int(time.time()*1e9)) + "_" + str(uuid.uuid4())+"_"+str(cutoff_index)+".phlt", "wb+") as f:
+                g = io.BytesIO()
+                np.savez(g, enc_obs[start:end], mb_actions[start:end],
+                         mb_rewards[start:end], mb_mus[start:end],
+                         mb_dones[start:end])
+                g.seek(0)
+                f.write(zstd.compress(g.read()))
+
+
 

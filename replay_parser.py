@@ -2,6 +2,8 @@ import json
 import zstd
 import hlt
 import numpy as np
+from baselines.acer.halite_env import HaliteEnv
+
 
 # from IPython import embed
 
@@ -204,6 +206,7 @@ def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
                 # "masks": False, # probably only matters for LSTMs, so... eh.
                     # if you ever want to use masks, save them in the buffer too
             })
+
     for ship in traces.values():
         ship[-1]["dones"] = True
     return_order = ["obs", "actions", "rewards", "mus", "dones",]# "masks"]
@@ -280,7 +283,7 @@ def enc_obs_to_obs(enc_obs):
 
 if __name__ == "__main__":
     # for debugging
-    obs = load_replay("replays/replay_nate.hlt", "0")
-    replay_to_enc_obs_n_stuff(obs, 0)
+    obs = load_replay("replays/replay-20181206-213539-0500-1544150119-32-32.hlt", "0")
+    replay_to_enc_obs_n_stuff(obs, HaliteEnv(), 0.99)
 
     ...
