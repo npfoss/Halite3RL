@@ -3,6 +3,7 @@
 ##########
 
 halite
+replays/
 *.log
 halite.zip
 dependencies/
