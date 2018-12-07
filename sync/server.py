@@ -12,7 +12,6 @@ with open(relpath("../params.json")) as f:
 def secret(f):
 	@functools.wraps(f)
 	def wrapper(*args, **kwargs):
-		print('check')
 		if request.args.get('secret') == params["secret"]:
 			return f(*args, **kwargs)
 		else:
@@ -53,7 +52,7 @@ def download_weights():
 @app.route('/list/replays')
 @secret
 def list():
-	return json.dumps([i.rsplit('.', 1)[0] for i in os.listdir(replays_folder)])
+	return "\n".join([i.rsplit('.', 1)[0] for i in os.listdir(replays_folder) if i.rsplit('.', 1)[1] == "phlt"])
 
 if __name__ == "__main__":
 	if not os.path.exists(replays_folder):
