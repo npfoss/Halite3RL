@@ -7,7 +7,7 @@ from baselines import logger
 
 from baselines.common import set_global_seeds
 from baselines.common.policies import build_policy
-from baselines.common.tf_util import get_session, save_variables
+from baselines.common.tf_util import get_session, save_variables, load_variables
 from baselines.common.vec_env.vec_frame_stack import VecFrameStack
 
 from baselines.a2c.utils import batch_to_seq, seq_to_batch
@@ -405,6 +405,9 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
         pkl.dump(learn_params, f)
 
     env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
+    # *** UNCOMMENT IF YOU WANT TO LOAD OLD VARIABLES
+    # load_variables("actor.ckpt")
+    # ***
 
     # runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
     runner = HaliteRunner() # reads the params json now
