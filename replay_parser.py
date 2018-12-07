@@ -6,20 +6,20 @@ import numpy as np
 # from IPython import embed
 
 def localize_matrix(m, new_length, old_center_y, old_center_x):
-    # at most can double 
+    # at most can double
     old_length = m.shape[0]
-    tall_m = np.concatenate((m, m,m), 0)   
-    big_m = np.concatenate((tall_m, tall_m, tall_m), 1) 
+    tall_m = np.concatenate((m, m,m), 0)
+    big_m = np.concatenate((tall_m, tall_m, tall_m), 1)
 
     short_edge = int(np.floor((new_length - 1)/2))
     long_edge = int(np.ceil((new_length - 1)/2))
 
     new_center_x = old_center_x + old_length
-    new_center_y = old_center_y + old_length 
+    new_center_y = old_center_y + old_length
 
     centered_m = big_m[new_center_y - short_edge: new_center_y + long_edge + 1,
                        new_center_x - short_edge: new_center_x + long_edge + 1]
-    return centered_m 
+    return centered_m
 
 def load_replay(file_name, player_id, mus_are_known = True):
     player_id = str(player_id)
@@ -47,35 +47,35 @@ def load_replay(file_name, player_id, mus_are_known = True):
     max_turns = data['GAME_CONSTANTS']['MAX_TURNS']
     actual_turns = len(data['full_frames'])
 
-    # ***** Load initial state ***** 
+    # ***** Load initial state *****
     halite = np.zeros((board_size, board_size), dtype = np.int32)
     friendly_dropoffs = np.zeros((board_size, board_size), dtype = np.int32)
     enemy_dropoffs = np.zeros((board_size, board_size), dtype = np.int32)
 
-    for y in range(board_size): #halite 
+    for y in range(board_size): #halite
         for x in range(board_size):
             halite[y][x] = data['production_map']['grid'][y][x]['energy']
 
-    for player_info in data['players']: # dropoffs 
+    for player_info in data['players']: # dropoffs
         player = str(player_info['player_id'])
         x = player_info['factory_location']['x']
-        y = player_info['factory_location']['y']    
+        y = player_info['factory_location']['y']
         if (player == player_id): # friendly
             friendly_dropoffs[y][x] = 1
         else: #enemy
             enemy_dropoffs[y][x] = 1
-    
+
     ship_info = {}
 
 
-    # ***** Update for each frame ***** 
+    # ***** Update for each frame *****
     for t in range(actual_turns):
         frame = data['full_frames'][t]
         frame_mus = ([] if t == 0 else game_mus[t - 1]) if t <= len(game_mus) else \
             {j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
 
- 
-        # Generate matrices for this turn 
+
+        # Generate matrices for this turn
         old_halite = np.copy(halite)
         friendly_ships = np.zeros((board_size, board_size), dtype = np.int32)
         friendly_ships_halite = np.zeros((board_size, board_size), dtype = np.int32)
@@ -109,19 +109,19 @@ def load_replay(file_name, player_id, mus_are_known = True):
         player_energy = data['full_frames'][t-1]['energy'][player_id] if t > 0 else 5000 # energy at END of frame
         energy_delta = frame['energy'][player_id] - player_energy
 
-        for changed_cell in frame['cells']: # update halite 
+        for changed_cell in frame['cells']: # update halite
             x = changed_cell['x']
             y = changed_cell['y']
             halite[y][x] = changed_cell['production']
 
-        for player in frame['entities']: # update ships 
+        for player in frame['entities']: # update ships
             player_entities = frame['entities'][player]
             for entity_id in player_entities:
                 entity = player_entities[entity_id]
                 x = entity['x']
                 y = entity['y']
                 energy = entity['energy']
-                if (player == player_id): # friendly 
+                if (player == player_id): # friendly
                     ship_info[entity_id] = {'pos': {'x': x, 'y': y}}
                     ship_info[entity_id]['energy'] = energy
                     ship_info[entity_id]['energy_delta'] = 0 # will be overridden once we know what actually happened
@@ -131,9 +131,9 @@ def load_replay(file_name, player_id, mus_are_known = True):
                     friendly_ships[y][x] = 1
                     friendly_ships_halite[y][x] = energy
                     ship_info[entity_id]["mus"] = np.array(frame_mus[entity_id], dtype=np.float32)
-                else: # enemy 
+                else: # enemy
                     enemy_ships[y][x] = 1
-                    enemy_ships_halite[y][x] = energy 
+                    enemy_ships_halite[y][x] = energy
 
         if t > 0:
             # compute ship halite deltas for previous turn
@@ -142,18 +142,18 @@ def load_replay(file_name, player_id, mus_are_known = True):
                                   (ship_info[idee]['energy'] if idee in ship_info else 0) \
                                 - parsed_frames[t-1]['ship_info'][idee]['energy']
 
-        for event in frame['events']: # update dropoffs 
+        for event in frame['events']: # update dropoffs
             if event['type'] == 'construct':
                 x = event['location']['x']
                 y = event['location']['y']
                 player = str(event['owner_id'])
-                if (player == player_id): # friendly 
+                if (player == player_id): # friendly
                     friendly_dropoffs[y][x] = 1
-                else: # enemy 
+                else: # enemy
                     enemy_dropoffs[y][x] = 1
 
         halite_left = old_halite.sum()  # This is different than the halite available on the
-                                        # online thing.  Mine doesn't count onboard ship halite. 
+                                        # online thing.  Mine doesn't count onboard ship halite.
 
         # remember that old mean "beginning of turn" aka current state during which actions were taken
         turn_results = {"halite_map"            : old_halite,                               # beginning of turn
@@ -166,7 +166,7 @@ def load_replay(file_name, player_id, mus_are_known = True):
                         "total_halite"          : old_halite.sum(), # total on the board    # beginning of turn
                         "player_energy"         : player_energy, # how much you have in the bank    # beginning of turn
                         "rounds_left"           : rounds_left,                              # beginning of turn
-                        "board_size"            : board_size,                               
+                        "board_size"            : board_size,
                         "energy_delta"          : energy_delta,                             #ON THIS TURN **************
                         # ** AUGMENTED WITH DELTA RETROACTIVELY
                         "ship_info"             : ship_info, # dictionary keyed by ship_id, contains (x,y) pos, energy, energy-delta, action and mu
@@ -184,7 +184,7 @@ def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
 
         right now, that's one giant string of observations+stuff, for each ship's
         journey through the game one after the other.
-        (trace ends upon death, with reward on last frame taking into account the rest of the game)    
+        (trace ends upon death, with reward on last frame taking into account the rest of the game)
 
     used like this:
         enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = replay_to_enc_obs_n_stuff(replay)
@@ -198,7 +198,7 @@ def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
                 "obs": gen_obs(frame, ship_info["pos"]),
                 "actions": env.action_to_num[ship_info["action"]],
                 "rewards": gen_rewards(frame, ship_info, \
-                    ship_id in parsed_frames[frame_index + 1] if frame_index + 1 < len(parsed_frames) else False),
+                    ship_id in parsed_frames[frame_index + 1]["ship_info"] if frame_index + 1 < len(parsed_frames) else False),
                 "mus": ship_info["mus"],
                 "dones": False,
                 # "masks": False, # probably only matters for LSTMs, so... eh.
@@ -249,7 +249,7 @@ def gen_obs(state, ship_pos):
     takes in the state (in replay-generated json format but also from the game)
     returns (64, 64, 7) tensor a la halite_env.py observation_space
     """
-    
+
 
     map_list = ['halite_map', 'friendly_ships', 'friendly_ships_halite', 'friendly_dropoffs',
                     'enemy_ships', 'enemy_ships_halite', 'enemy_dropoffs']
@@ -262,7 +262,7 @@ def gen_obs(state, ship_pos):
 
 
 def enc_obs_to_obs(enc_obs):
-    """ takes the encoded observations (output of replay_to_enc_obs) 
+    """ takes the encoded observations (output of replay_to_enc_obs)
 
     Returns:
         list of observations in the form you would input them to the model
@@ -282,5 +282,5 @@ if __name__ == "__main__":
     # for debugging
     obs = load_replay("replays/replay_nate.hlt", "0")
     replay_to_enc_obs_n_stuff(obs, 0)
-    
+
     ...
