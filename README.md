@@ -21,3 +21,8 @@ to run the actors which generate data:
 to run the learner (only one at a time please):
 `python3 -m baselines.run --alg=acer --env=PongNoFrameskip-v4`
 ...it's fine.
+
+## TPU stuff
+(mostly notes to self from Nate)
+
+When it's time to tear everything down, put this at the end of any `console.cloud.google.com/compute/` url: `&walkthrough_tutorial_id=cloud_tpu_quickstart`
