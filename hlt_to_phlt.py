@@ -10,7 +10,7 @@ import io
 import zstd
 import os
 
-DIRECTORY = "replays/"
+DIRECTORY = "expert_replays/"
 file_list = os.listdir(DIRECTORY)
 
 for replay_file_num, replay_file_name in enumerate(file_list):
