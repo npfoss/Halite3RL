@@ -420,7 +420,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
 
     env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
     # *** UNCOMMENT IF YOU WANT TO LOAD OLD VARIABLES
-    # load_variables("actor.ckpt")
+    load_variables("actor.ckpt")
     # ***
 
     # runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
