@@ -13,9 +13,11 @@ import zstd
 
 class HaliteRunner:
 
-    def __init__(self):
+    def __init__(self, model=None):
         with open("params.json") as f:
             params = json.load(f)
+
+        self.model = model
 
         self.env = HaliteEnv()
         self.nact = 6
@@ -27,43 +29,48 @@ class HaliteRunner:
         # self.ac_dtype = env.action_space.dtype
         self.nbatch = self.nenv * self.nsteps
         self.gamma = params["gamma"]
+        self.packing_factor = params['min_phlt_size_kinda']
 
 
     def run(self):
 
-        #run a game.
-        size = np.random.choice([32, 40, 48, 56, 64])
-        num_players = 2 if (np.random.random() < 0.5) else 4
-
-        o = subprocess.check_output(['sh', 'acer_run.sh', str(size), str(num_players)])
-        j = json.loads(o.decode("utf-8"))
-
-        #next, parse the replay
-        replay_file_name = j['replay']
         enc_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks = (None,)*6
 
-        for player in range(num_players):
-            # player = np.random.randint(0, num_players-1)
+        while mb_dones is None or len(mb_dones) < self.packing_factor:
+            #run a game.
+            size = np.random.choice([32, 40, 48, 56, 64])
+            num_players = 2 if (np.random.random() < 0.5) else 4
 
-            replay = load_replay(replay_file_name, player)
+            o = subprocess.check_output(['sh', 'acer_run.sh', str(size), str(num_players)])
+            j = json.loads(o.decode("utf-8"))
 
-            eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
-            assert not np.isnan(m).any(), 'mus are null!!! :('
+            #next, parse the replay
+            replay_file_name = j['replay']
 
-            if enc_obs is None:
-                enc_obs = eo
-                mb_actions = a
-                mb_rewards = r
-                mb_mus = m
-                mb_dones = d
-                # mb_masks = ma
-            else:
-                enc_obs = np.concatenate((enc_obs, eo), axis=0)
-                mb_actions = np.concatenate((mb_actions, a), axis=0)
-                mb_rewards = np.concatenate((mb_rewards, r), axis=0)
-                mb_mus = np.concatenate((mb_mus, m), axis=0)
-                mb_dones = np.concatenate((mb_dones, d), axis=0)
-                # np.concatenate((mb_masks, ma), axis=0)
+            for player in range(num_players):
+                # player = np.random.randint(0, num_players-1)
+
+                replay = load_replay(replay_file_name, player)
+
+                eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
+                if np.isnan(m).any():
+                    # must be an expert game, don't know mus...
+                    _, m, _ = self.model._step(enc_obs_to_obs(eo))
+
+                if enc_obs is None:
+                    enc_obs = eo
+                    mb_actions = a
+                    mb_rewards = r
+                    mb_mus = m
+                    mb_dones = d
+                    # mb_masks = ma
+                else:
+                    enc_obs = np.concatenate((enc_obs, eo), axis=0)
+                    mb_actions = np.concatenate((mb_actions, a), axis=0)
+                    mb_rewards = np.concatenate((mb_rewards, r), axis=0)
+                    mb_mus = np.concatenate((mb_mus, m), axis=0)
+                    mb_dones = np.concatenate((mb_dones, d), axis=0)
+                    # np.concatenate((mb_masks, ma), axis=0)
 
         mb_obs = enc_obs_to_obs(enc_obs)
 
