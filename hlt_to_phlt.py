@@ -13,7 +13,7 @@ import os
 DIRECTORY = "replays/"
 file_list = os.listdir(DIRECTORY)
 
-for replay_file_name in file_list:
+for replay_file_num, replay_file_name in enumerate(file_list):
     if not (replay_file_name[-4:] == ".hlt"):
         continue
 
@@ -101,6 +101,7 @@ for replay_file_name in file_list:
                      mb_dones[start:end])
             g.seek(0)
             f.write(zstd.compress(g.read()))
+        
 
-
+    print("Done with", replay_file_num)
 
