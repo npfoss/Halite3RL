@@ -22,6 +22,8 @@ to run the learner (only one at a time please):
 `python3 -m baselines.run --alg=acer --env=PongNoFrameskip-v4`
 ...it's fine.
 
+to download the most recent weights, go to: [tracksingles.com](https://tracksingles.com/download/weights?secret=b02c29dc-606b-4f1e-8497-39c7e30c84b0) (lol)
+
 ## TPU stuff
 (mostly notes to self from Nate)
 
