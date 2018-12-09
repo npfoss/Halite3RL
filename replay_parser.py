@@ -182,7 +182,6 @@ def load_replay(file_name, player_id, mus_are_known=True):
     parsed_frames = parsed_frames[1:-1]
     return parsed_frames
 
-
 def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
     """ converts output of load_replay to the format we store things in the buffer.
 

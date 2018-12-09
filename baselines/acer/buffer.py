@@ -7,6 +7,8 @@ import time
 import zstd
 import io
 
+from IPython import embed
+
 class Buffer(object):
     # gets obs, actions, rewards, mu's, (states, masks), dones
     def __init__(self, env, nsteps, size=50, disk_size=250):
@@ -96,10 +98,15 @@ class Buffer(object):
             # self.dones = np.empty([self.size] + list(dones.shape), dtype=np.bool)
             # self.masks = np.empty([self.size] + list(masks.shape), dtype=np.bool)
 
+        assert tuple(enc_obs.shape[1:]) == (64, 64, 7), 'enc_obs wrong shape! {}'.format(enc_obs.shape)
         self.enc_obs[self.next_idx] = enc_obs
+        assert tuple(actions.shape[1:]) == (), 'actions wrong shape! {}'.format(actions.shape)
         self.actions[self.next_idx] = actions
+        assert tuple(rewards.shape[1:]) == (), 'rewards wrong shape! {}'.format(rewards.shape)
         self.rewards[self.next_idx] = rewards
+        # assert tuple(mus.shape[1:]) == (64, 64, 7), 'mus wrong shape! {}'.format(mus.shape)
         self.mus[self.next_idx] = mus
+        assert tuple(dones.shape[1:]) == (), 'dones wrong shape! {}'.format(dones.shape)
         self.dones[self.next_idx] = dones
         # self.masks[self.next_idx] = masks
 
@@ -156,7 +163,11 @@ class Buffer(object):
                 g.seek(0)
                 data = np.load(g)
                 enc_obs, actions, rewards, mus, dones = (data[i] for i in data)
-                self.put(enc_obs, actions, rewards, mus, dones)
+                try:
+                    self.put(enc_obs, actions, rewards, mus, dones)
+                except:
+                    print('failed in update_buffers')
+                    embed()
 
         # now update disk last to avoid concurrency problems
         # well, first have to check if the last one is done: poll() checks if process is still running
