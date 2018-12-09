@@ -4,6 +4,7 @@
 
 halite
 replays/
+expert_replays/
 *.log
 halite.zip
 dependencies/
