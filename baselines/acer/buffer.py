@@ -162,12 +162,8 @@ class Buffer(object):
                 g.write(zstd.uncompress(f.read()))
                 g.seek(0)
                 data = np.load(g)
-                enc_obs, actions, rewards, mus, dones = (data[i] for i in data)
-                try:
-                    self.put(enc_obs, actions, rewards, mus, dones)
-                except:
-                    print('failed in update_buffers')
-                    embed()
+                enc_obs, actions, rewards, mus, dones = (data[s] for s in sorted((i for i in data)))
+                self.put(enc_obs, actions, rewards, mus, dones)
 
         # now update disk last to avoid concurrency problems
         # well, first have to check if the last one is done: poll() checks if process is still running
