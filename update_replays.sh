@@ -5,4 +5,4 @@ cd replays
 curl --silent `url ../params.json list/replays` | while read line; do
 	curl --silent -OJ `url ../params.json "download/replay/$line"`
 done
-ls -1 *.phlt | tail -n +`param ../params.json disk_buffer_size` | xargs rm
+ls -1r *.phlt | tail -n +`param ../params.json disk_buffer_size` | xargs rm
