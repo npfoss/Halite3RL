@@ -1,6 +1,6 @@
 {
     "disk_buffer_size": 250,
-    "buffer_size": 20,
+    "buffer_size": 16,
     "replay_start": 4,
     "replay_ratio": 500,
     "gamma": 0.99,
