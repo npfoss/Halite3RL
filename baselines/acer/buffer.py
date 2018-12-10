@@ -150,7 +150,7 @@ class Buffer(object):
         masks = None
         return obs, actions, rewards, mus, dones, masks
 
-    def update_buffers(self):
+    def update_buffers(self, model):
         # sample new replays from disk
         #   takes 0.13285534381866454 sec on average to load enc_obs 1434 long
         path = './replays'
@@ -166,6 +166,10 @@ class Buffer(object):
                 g.seek(0)
                 data = np.load(g)
                 enc_obs, actions, rewards, mus, dones = (data[s] for s in sorted((i for i in data)))
+                if np.isnan(mus).any():
+                    # must be an expert game, don't know mus...
+                    _, mus, _ = self.model._step(enc_obs_to_obs(enc_obs))
+
                 self.put(enc_obs, actions, rewards, mus, dones)
 
         # now update disk last to avoid concurrency problems

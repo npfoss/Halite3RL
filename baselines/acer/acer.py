@@ -270,7 +270,7 @@ class Acer():
             # INSTEAD: read new replays that the minion uploaded and output weights for them.
             #   also, update the minions' params
             model.save("actor.ckpt")
-            buffer.update_buffers()
+            buffer.update_buffers(model)
 
         # else:
             # get obs, actions, rewards, mus, dones from buffer.
@@ -429,7 +429,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
         buffer = Buffer(env=env, nsteps=nsteps, size=buffer_size, disk_size=disk_buffer_size)
     else:
         buffer = None
-    buffer.update_buffers()
+    buffer.update_buffers(model)
     nbatch = nenvs*nsteps
     acer = Acer(runner, model, buffer, log_interval, nsteps)
     acer.tstart = time.time()

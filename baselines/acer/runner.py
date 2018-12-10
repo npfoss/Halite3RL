@@ -53,9 +53,7 @@ class HaliteRunner:
                 replay = load_replay(replay_file_name, player)
 
                 eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, self.env, gamma=self.gamma)
-                if np.isnan(m).any():
-                    # must be an expert game, don't know mus...
-                    _, m, _ = self.model._step(enc_obs_to_obs(eo))
+                assert not np.isnan(mus).any(), "some mus are None! D:"
 
                 if enc_obs is None:
                     enc_obs = eo
