@@ -6,3 +6,5 @@ ls *.phlt | while read line; do
 	curl -X POST -F "file=@$line" `url ../../params.json upload/replay`
 	rm $line
 done
+
+cd ../../
