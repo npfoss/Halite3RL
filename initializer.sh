@@ -16,7 +16,7 @@ sudo apt install python3-pip -y
 sudo apt install unzip
 
 # install script
-pip3 install tensorflow==1.8 scipy zstd gym dill joblib
+pip3 install tensorflow==1.8 scipy zstd gym dill joblib appdirs trueskill
 pip3 install gym[atari]
 
 # find the OS

@@ -13,3 +13,4 @@ README.md
 run_game.sh
 zipper.sh
 sync/*
+hlt_client/*
