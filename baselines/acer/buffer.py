@@ -154,7 +154,10 @@ class Buffer(object):
         # sample new replays from disk
         #   takes 0.13285534381866454 sec on average to load enc_obs 1434 long
         path = './replays'
-        replay_filenames = [f for f in listdir(path) if isfile(join(path, f)) and '.phlt' in f][-self.disk_size+1:]
+        replay_filenames = sorted([f for f in listdir(path) if isfile(join(path, f)) and '.phlt' in f])
+        print('first: {}'.format(replay_filenames[0]))
+        print('last : {}'.format(replay_filenames[-1]))
+        replay_filenames = replay_filenames[-self.disk_size+1:]
 
         for filename in sample(replay_filenames, min(self.size, len(replay_filenames))):
             with open(join(path, filename), 'rb') as f:
