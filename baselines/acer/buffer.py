@@ -168,7 +168,7 @@ class Buffer(object):
                 enc_obs, actions, rewards, mus, dones = (data[s] for s in sorted((i for i in data)))
                 if np.isnan(mus).any():
                     # must be an expert game, don't know mus...
-                    _, mus, _ = self.model._step(enc_obs_to_obs(enc_obs))
+                    _, mus, _ = model._step(enc_obs_to_obs(enc_obs))
 
                 self.put(enc_obs, actions, rewards, mus, dones)
 
