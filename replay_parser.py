@@ -237,7 +237,7 @@ def fake_mus(player_id, data):
 
 def gen_rewards(state, ship_info, survives):
     # magic numbers
-    ship_pickup_multiplier = 0.1
+    ship_pickup_multiplier = 0.05
     # selfish right now
     if ship_info["energy_delta"] == -ship_info["energy"] and survives:
         # dropped off all halite, potential drop off
