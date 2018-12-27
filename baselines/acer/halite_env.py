@@ -15,8 +15,8 @@ class HaliteEnv:
                     1, # enemy dropoff
                     ])
         # self.observation_space = spaces.Box(lows, highs, dtype=np.int)
-        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(64, 64, 7), dtype=np.int)
-        # self.observation_space = spaces.Box(lows, highs, shape=(7, 64, 64), dtype=np.int)
+        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(32, 32, 7), dtype=np.int)
+        # self.observation_space = spaces.Box(lows, highs, shape=(7, 32, 32), dtype=np.int)
 
         self.action_space = spaces.Discrete(6) # North, South, East, West, Still, BUILD_DROPOFF (as numbers 0-5)
         self.action_to_num = {

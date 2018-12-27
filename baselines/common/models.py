@@ -38,7 +38,7 @@ def halite_cnn(unscaled_images, **conv_kwargs):
     h3 = activ(conv(h2, 'c3', nf=64, rf=3, stride=1, init_scale=np.sqrt(2), **conv_kwargs))
     h3 = conv_to_fc(h3)
     h4 = activ(fc(h3, 'fc1', nh=512, init_scale=np.sqrt(2)))
-    return activ(fc(h4, 'fc1', nh=128, init_scale=np.sqrt(2)))
+    return activ(fc(h4, 'fc2', nh=128, init_scale=np.sqrt(2)))
 
 # @register("halite-cnn")
 # def cnn(**conv_kwargs):

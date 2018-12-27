@@ -99,7 +99,7 @@ class Buffer(object):
             # self.dones = np.empty([self.size] + list(dones.shape), dtype=np.bool)
             # self.masks = np.empty([self.size] + list(masks.shape), dtype=np.bool)
 
-        assert tuple(enc_obs.shape[1:]) == (64, 64, 7), 'enc_obs wrong shape! {}'.format(enc_obs.shape)
+        assert tuple(enc_obs.shape[1:]) == (32, 32, 7), 'enc_obs wrong shape! {}'.format(enc_obs.shape)
         self.enc_obs[self.next_idx] = enc_obs
         assert tuple(actions.shape[1:]) == (), 'actions wrong shape! {}'.format(actions.shape)
         self.actions[self.next_idx] = actions

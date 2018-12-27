@@ -7,7 +7,7 @@ from baselines.acer.halite_env import HaliteEnv
 
 # from IPython import embed
 
-def localize_matrix(m, new_length, old_center_y, old_center_x):
+def localize_matrix(m, new_length, old_center_y, old_center_x, add_to_edge_if_missing=False):
     # at most can double
     old_length = m.shape[0]
     tall_m = np.concatenate((m, m,m), 0)
@@ -21,6 +21,48 @@ def localize_matrix(m, new_length, old_center_y, old_center_x):
 
     centered_m = big_m[new_center_y - short_edge: new_center_y + long_edge + 1,
                        new_center_x - short_edge: new_center_x + long_edge + 1]
+
+    if add_to_edge_if_missing and np.sum(centered_m) == 0:
+        closesty = None
+        closestx = None
+        px = None
+        py = None
+        ext = int(np.floor(new_length/2))
+        while ext < 67 and closestx is None:
+            for d in range(-ext, ext + 1):
+                # trace all four edges
+                if big_m[new_center_y - ext, new_center_x + d]:
+                    closesty = new_center_y - ext
+                    closestx = new_center_x + d
+                    py = 0
+                    break
+                if big_m[new_center_y + d, new_center_x - ext]:
+                    closesty = new_center_y + d
+                    closestx = new_center_x - ext
+                    px = 0
+                    break
+                if big_m[new_center_y + ext, new_center_x + d]:
+                    closesty = new_center_y + ext
+                    closestx = new_center_x + d
+                    py = short_edge + long_edge
+                    break
+                if big_m[new_center_y + d, new_center_x + ext]:
+                    closesty = new_center_y + d
+                    closestx = new_center_x + ext
+                    px = short_edge + long_edge
+                    break
+            ext += 1
+        ext -= 1
+        assert closestx is not None , "didn't find any dropoffs"
+        # now find appropriate point on perimeter
+        if px is not None:
+            py = int(np.floor(((closesty - new_center_y) + ext) * new_length / (2 * ext + 1)))
+        elif py is not None:
+            px = int(np.floor(((closestx - new_center_x) + ext) * new_length / (2 * ext + 1)))
+
+        centered_m[py, px] = 1
+        # the stuff above is kinda hard to follow, but I tested it and I'm pretty sure it works the way we want in all edge cases
+
     return centered_m
 
 def load_replay(file_name, player_id, mus_are_known=True):
@@ -253,15 +295,16 @@ def gen_rewards(state, ship_info, survives):
 def gen_obs(state, ship_pos):
     """g
     takes in the state (in replay-generated json format but also from the game)
-    returns (64, 64, 7) tensor a la halite_env.py observation_space
+    returns (32, 32, 7) tensor a la halite_env.py observation_space
     """
 
 
     map_list = ['halite_map', 'friendly_ships', 'friendly_ships_halite', 'friendly_dropoffs',
                     'enemy_ships', 'enemy_ships_halite', 'enemy_dropoffs']
-    map_tensor = np.zeros((7, 64, 64))
+    map_tensor = np.zeros((7, 32, 32))
     for index, feature in enumerate(map_list):
-        map_tensor[index] = localize_matrix(state[feature], 64, ship_pos['y'], ship_pos['x'])
+        map_tensor[index] = localize_matrix(state[feature], 32, ship_pos['y'], ship_pos['x'],
+                add_to_edge_if_missing=(feature == 'friendly_dropoffs'))
     map_tensor = np.moveaxis(map_tensor, 0, 2)
 
     return map_tensor

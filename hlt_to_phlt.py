@@ -12,6 +12,9 @@ import os
 
 DIRECTORY = "expert_replays/"
 file_list = os.listdir(DIRECTORY)
+env = HaliteEnv()
+
+print('converting ' + str(file_list))
 
 for replay_file_num, replay_file_name in enumerate(file_list):
     if not (replay_file_name[-4:] == ".hlt"):
@@ -23,7 +26,6 @@ for replay_file_num, replay_file_name in enumerate(file_list):
         # player = np.random.randint(0, num_players-1)
 
         replay = load_replay(DIRECTORY + replay_file_name, player, False)
-        env = HaliteEnv()
         gamma = 0.99
         eo, a, r, m, d, ma = replay_to_enc_obs_n_stuff(replay, env, gamma=gamma)
 
