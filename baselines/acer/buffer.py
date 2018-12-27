@@ -8,7 +8,7 @@ import zstd
 import io
 from replay_parser import enc_obs_to_obs
 
-from IPython import embed
+# from IPython import embed
 
 class Buffer(object):
     # gets obs, actions, rewards, mu's, (states, masks), dones
