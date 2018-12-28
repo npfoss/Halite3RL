@@ -1,8 +1,8 @@
 {
     "disk_buffer_size": 250,
-    "buffer_size": 16,
+    "buffer_size": 32,
     "replay_start": 4,
-    "replay_ratio": 500,
+    "replay_ratio": 2000,
     "gamma": 0.99,
     "nsteps": 20,
     "actor_runs_per_upload": 2,
