@@ -4,14 +4,15 @@ A reinforcement learning bot for the Halite III programming competition https://
 ## install
 
 ```bash
-git clone https://github.com/npfoss/Halite3RL.git
-cd Halite3RL
-pip3 install tensorflow scipy zstd gym dill gym[atari] joblib
-curl -O https://halite.io/assets/downloads/Halite3_Python3_Linux-AMD64.zip
-unzip Halite3_Python3_Linux-AMD64.zip -d tmp_halite
-mv tmp_halite/halite .
-rm -rf tmp_halite/ Halite3_Python3_Linux-AMD64.zip
+wget https://github.com/npfoss/Halite3RL/blob/master/initializer.sh
+# or if that doesn't work because the repo is still private:
+# wget http://npfoss.com/initializer.sh
+chmod +x initializer.sh
+./initializer.sh
 ```
+
+This initializer was written for Ubuntu 18.04 but should work on any Debian-based Linux distro.
+If it doesn't work, try going through it and running your machine's equivalent of each command.
 
 ## running
 
