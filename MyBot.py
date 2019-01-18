@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Python 3.6
 
-exporation_proportion = 0.1
+exporation_proportion = 0.2
 
 from benchmarking import benchmarker
 from unittest.mock import Mock
@@ -167,7 +167,7 @@ while True:
         if not ITS_THE_REAL_DEAL: benchmark.benchmark("ran model")
         frame_mus[ship.id] = [float(mu) for mu in mus[0]]
         if not ITS_THE_REAL_DEAL and random.random() < exporation_proportion:
-            action = random.randrange(4) # NOTE: making this 4 excludes dropoffs
+            action = random.randrange(5) # NOTE: making this 4 excludes dropoffs
             logging.info('Moving randomly')
         else:
             action = actions[0]
@@ -177,12 +177,7 @@ while True:
                     [Direction.North, Direction.South, Direction.East, Direction.West][action]))
         elif action == 4:
             command_queue.append(ship.stay_still())
-        elif action == 5 and ship.halite_amount + game_map[ship.position].halite_amount + me.halite_amount >= 4000\
-                and not game_map[ship.position].has_structure:
-            # have to check because it crashes otherwise
-            command_queue.append(ship.make_dropoff())
-            me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
-        elif action == 6:
+        elif action == 5:
             closest = min(me.get_dropoffs(), key = lambda dropoff: abs(dropoff.position.x - ship.position.x) + abs(dropoff.position.y - ship.position.y))
             towards_base = []
             if closest.position.x < ship.position.x:
@@ -194,6 +189,11 @@ while True:
             elif closest.position.x > ship.position.y:
                 towards_base.append((0, 1, Direction.South))
             home_action = min(towards_base, key = lambda delta: game_map[(ship.position.x + delta[0], ship.position.y + delta[1])])[2]
+        elif action == 6 and ship.halite_amount + game_map[ship.position].halite_amount + me.halite_amount >= 4000\
+                and not game_map[ship.position].has_structure:
+            # have to check because it crashes otherwise
+            command_queue.append(ship.make_dropoff())
+            me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
 
 		returned_to_home[ship.id] = action == 6
 
