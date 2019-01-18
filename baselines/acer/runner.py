@@ -20,7 +20,7 @@ class HaliteRunner:
         self.model = model
 
         self.env = HaliteEnv()
-        self.nact = 6
+        self.nact = env.action_space.n
         self.nenv = 1
         self.nsteps = params["nsteps"]
         self.batch_ob_shape = (self.nenv*(self.nsteps+1),) + self.env.observation_space.shape
