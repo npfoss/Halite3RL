@@ -18,7 +18,7 @@ class HaliteEnv:
         self.observation_space = spaces.Box(low=0, high=np.inf, shape=(32, 32, 7), dtype=np.int)
         # self.observation_space = spaces.Box(lows, highs, shape=(7, 32, 32), dtype=np.int)
 
-        self.action_space = spaces.Discrete(6) # North, South, East, West, Still, BUILD_DROPOFF (as numbers 0-5)
+        self.action_space = spaces.Discrete(7) # North, South, East, West, Still, BUILD_DROPOFF, move towards home (as numbers 0-6)
         self.action_to_num = {
                 'n': 0,
                 's': 1,
@@ -26,6 +26,7 @@ class HaliteEnv:
                 'w': 3,
                 'o': 4,
                 'c': 5,
+                'h': 6,
             }
 
         self.nstack = 7 # this is the number of timesteps to stack into one "observation"

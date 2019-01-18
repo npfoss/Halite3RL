@@ -72,9 +72,9 @@ def load_replay(file_name, player_id, mus_are_known=True):
         data = json.loads(zstd.loads(f.read()).decode("utf-8"))
 
     if mus_are_known:
-        game_mus = read_mus(player_id)
+        game_mus , went_home = read_mus(player_id)
     else:
-        game_mus = None#fake_mus(player_id, data)
+        game_mus , went_home = None , None#fake_mus(player_id, data)
 
     '''
     Notes on replay format (keys of data['full_frames']):
@@ -118,6 +118,8 @@ def load_replay(file_name, player_id, mus_are_known=True):
         if mus_are_known:
             frame_mus = ([] if t == 0 else game_mus[t - 1]) if t <= len(game_mus) else \
                 {j:None for i in frame["entities"] for j in frame["entities"][i]} # Mus are all none if no moves were made
+            frame_went_home = ([] if t == 0 else went_home[t - 1]) if t <= len(went_home) else \
+                {j:None for i in frame["entities"] for j in frame["entities"][i]}
 
 
         # Generate matrices for this turn
@@ -171,11 +173,15 @@ def load_replay(file_name, player_id, mus_are_known=True):
                     ship_info[entity_id]['energy'] = energy
                     ship_info[entity_id]['energy_delta'] = 0 # will be overridden once we know what actually happened
                     # note: create supply depot move looks like this: {'id': 5, 'type': 'c'}
-                    ship_info[entity_id]['action'] = 'o' if not entity_id in moves else \
-                            moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
+                    assert (not mus_are_known or t == 0 or t >= actual_turns-1 or frame_went_home[entity_id] is not None) , "frame_went_home is None!! :("
+                    if mus_are_known and frame_went_home[entity_id]:
+                        ship_info[entity_id]['action'] = 'h'
+                    else:
+                        ship_info[entity_id]['action'] = 'o' if not entity_id in moves else \
+                                moves[entity_id]['direction'] if 'direction' in moves[entity_id] else moves[entity_id]['type']
                     friendly_ships[y][x] = 1
                     friendly_ships_halite[y][x] = energy
-                    assert (not mus_are_known or t == 0 or t >= actual_turns-1 or frame_mus[entity_id] is not None) , "mus are none!! :("
+                    assert (not mus_are_known or t == 0 or t >= actual_turns-1 or frame_mus[entity_id] is not None) , "mus are None!! :("
                     ship_info[entity_id]["mus"] = np.array(frame_mus[entity_id], dtype=np.float32) if mus_are_known else np.array([np.nan])
                 else: # enemy
                     enemy_ships[y][x] = 1
