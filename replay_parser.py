@@ -263,13 +263,16 @@ def replay_to_enc_obs_n_stuff(parsed_frames, env, gamma):
 
 def read_mus(player_id):
     mus = []
+    returned_to_home = []
     with open("bot-"+str(player_id)+".log") as f:
         for line in f:
             if "mu:" in line:
                 mu_str = line.split("mu:")[-1]
                 mus.append(json.loads(mu_str))
-
-    return mus
+            if "rth:" in line:
+                mu_str = line.split("rth:")[-1]
+                returned_to_home.append(json.loads(rth_str))
+    return mus, returned_to_home
 
 def fake_mus(player_id, data):
     uniform_mus = np.ones(6)/6
@@ -277,7 +280,7 @@ def fake_mus(player_id, data):
     mus=[]
     for t in range(mus_len):
         if player_id in data['full_frames'][t+1]['entities']:
-            entity_list =data['full_frames'][t+1]['entities'][player_id]
+            entity_list = data['full_frames'][t+1]['entities'][player_id]
             mus.append({j:uniform_mus for i in entity_list for j in entity_list})
         else:
             mus.append([])

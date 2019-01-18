@@ -146,6 +146,7 @@ while True:
     frame_mus = {}
 
     if not ITS_THE_REAL_DEAL: benchmark.benchmark("created env variables")
+    returned_to_home = {}
     for ship in me.get_ships():
 
         obs = gen_obs(state, {'x': ship.position.x, 'y': ship.position.y}) # (64,64,7)
@@ -212,6 +213,8 @@ while True:
             command_queue.append(ship.make_dropoff())
             me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
 
+        returned_to_home[ship.id] = action == 6
+
         # documentation ?
         if not ITS_THE_REAL_DEAL: benchmark.benchmark("ship {} turn stats".format(ship.id))
 
@@ -225,6 +228,7 @@ while True:
 
     if not ITS_THE_REAL_DEAL:
         logging.info("mu:"+json.dumps(frame_mus))
+        logging.info("rth:"+json.dumps(returned_to_home))
         benchmark.benchmark("end turn")
     # Send your moves back to the game environment, ending this turn.
     game.end_turn(command_queue)
