@@ -270,7 +270,7 @@ def read_mus(player_id):
                 mu_str = line.split("mu:")[-1]
                 mus.append(json.loads(mu_str))
             if "rth:" in line:
-                mu_str = line.split("rth:")[-1]
+                rth_str = line.split("rth:")[-1]
                 returned_to_home.append(json.loads(rth_str))
     return mus, returned_to_home
 
