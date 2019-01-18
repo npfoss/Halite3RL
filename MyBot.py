@@ -173,9 +173,12 @@ while True:
             # move towards home greedily
             wrap = lambda distance: board_length / 2 - abs(board_length / 2 - distance)
             closest = min(me.get_dropoffs() + [me.shipyard,], key=lambda dropoff: wrap(abs(dropoff.position.x - ship.position.x)) + wrap(abs(dropoff.position.y - ship.position.y)))
-            towards_base = game_map.get_unsafe_moves(ship.position, closest)
-            home_action = min(towards_base, key=lambda direction: game_map[(ship.position.x + direction[0], ship.position.y + direction[1])])
-            command_queue.append(ship.move(home_action))
+            if closest.position.x == ship.position.x and closest.position.y == ship.position.y:
+                command_queue.append(ship.stay_still())
+            else:
+                towards_base = game_map.get_unsafe_moves(ship.position, closest.position)
+                home_action = min(towards_base, key=lambda direction: game_map[game_map.normalize(Position(ship.position.x + direction[0], ship.position.y + direction[1]))].halite_amount)
+                command_queue.append(ship.move(home_action))
         elif action == 6 and ship.halite_amount + game_map[ship.position].halite_amount + me.halite_amount >= 4000\
                 and not game_map[ship.position].has_structure:
             # have to check because it crashes otherwise
