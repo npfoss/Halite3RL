@@ -99,11 +99,11 @@ while True:
     enemy_ships = np.zeros((board_length, board_length))
     enemy_ships_halite = np.zeros((board_length, board_length))
     enemy_dropoffs =  np.zeros((board_length, board_length))
-    
+
     for player in game.players:
         player_ships = game.players[player].get_ships()
         player_dropoffs = game.players[player].get_dropoffs()
-        
+
         for ship in player_ships:
             if player == me:
                 friendly_ships[ship.position.y][ship.position.x] = 1
@@ -111,7 +111,7 @@ while True:
             else:
                 enemy_ships[ship.position.y][ship.position.x] = 1
                 enemy_ships_halite[ship.position.y][ship.position.x] = ship.halite_amount
-                
+
         for dropoff in player_dropoffs:
             if player == me:
                 friendly_dropoffs[dropoff.position.y][dropoff.position.x] = 1
@@ -126,7 +126,7 @@ while True:
     map_list = ['halite_map', 'friendly_ships', 'friendly_ships_halite', 'friendly_dropoffs',
                     'enemy_ships', 'enemy_ships_halite', 'enemy_dropoffs']
 
-    
+
     state = {
                 'halite_map': halite,
                 'friendly_ships': friendly_ships,
@@ -159,8 +159,8 @@ while True:
         #         '\nmus:', mus,\
         #         '\nstates:', states)
         ## spoilers:
-        ## actions: [1] 
-        ## mus: [[0.16987674 0.16746981 0.15873784 0.16824721 0.168809   0.16685943]] 
+        ## actions: [1]
+        ## mus: [[0.16987674 0.16746981 0.15873784 0.16824721 0.168809   0.16685943]]
         ## states: []
         # TODO: save mus (could just use log file!)
         if not ITS_THE_REAL_DEAL: benchmark.benchmark("ran model")
@@ -176,17 +176,29 @@ while True:
                     [Direction.North, Direction.South, Direction.East, Direction.West][action]))
         elif action == 4:
             command_queue.append(ship.stay_still())
-        elif ship.halite_amount + game_map[ship.position].halite_amount + me.halite_amount >= 4000\
+        elif action == 5 and ship.halite_amount + game_map[ship.position].halite_amount + me.halite_amount >= 4000\
                 and not game_map[ship.position].has_structure:
             # have to check because it crashes otherwise
             command_queue.append(ship.make_dropoff())
             me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
+        elif action == 6:
+            closest = min(me.get_dropoffs(), key = lambda dropoff: abs(dropoff.position.x - ship.position.x) + abs(dropoff.position.y - ship.position.y))
+            towards_base = []
+            if closest.position.x < ship.position.x:
+                towards_base.append((-1, 0, Direction.West))
+            elif closest.position.x > ship.position.x:
+                towards_base.append((1, 0, Direction.East))
+            if closest.position.x < ship.position.y:
+                towards_base.append((0, -1, Direction.North))
+            elif closest.position.x > ship.position.y:
+                towards_base.append((0, 1, Direction.South))
+            home_action = min(towards_base, key = lambda delta: game_map[(ship.position.x + delta[0], ship.position.y + delta[1])])[2]
 
         # documentation ?
         if not ITS_THE_REAL_DEAL: benchmark.benchmark("ship {} turn stats".format(ship.id))
 
 
-    # **** SPAWN RULE STUFF **** 
+    # **** SPAWN RULE STUFF ****
     # If the game is in the first 200 turns and you have enough halite, spawn a ship.
     # Don't spawn a ship if you currently have a ship at port, though - the ships will collide.
     if game.turn_number <= 200 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied:
