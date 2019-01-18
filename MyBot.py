@@ -171,7 +171,8 @@ while True:
             command_queue.append(ship.stay_still())
         elif action == 5:
             # move towards home greedily
-            closest = min(me.get_dropoffs(), key=lambda dropoff: abs(dropoff.position.x - ship.position.x) + abs(dropoff.position.y - ship.position.y))
+			wrap = lambda distance: len(game_map) / 2 - abs(len(game_map) / 2 - distance)
+            closest = min(me.get_dropoffs(), key=lambda dropoff: wrap(abs(dropoff.position.x - ship.position.x)) + wrap(abs(dropoff.position.y - ship.position.y)))
             towards_base = []
             if abs(ship.position.x - closest.position.x) > len(game_map) / 2:
                 # need to wrap around
