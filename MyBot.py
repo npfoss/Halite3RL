@@ -205,7 +205,7 @@ while True:
             command_queue.append(ship.make_dropoff())
             me.halite_amount -= 4000 - (ship.halite_amount + game_map[ship.position].halite_amount)
 
-        returned_to_home[ship.id] = action == 6
+        returned_to_home[ship.id] = bool(action == 5)
 
         # documentation ?
         if not ITS_THE_REAL_DEAL: benchmark.benchmark("ship {} turn stats".format(ship.id))
