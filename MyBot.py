@@ -185,7 +185,7 @@ while True:
                     towards_base.append((-1, 0, Direction.West))
                 elif closest.position.x > ship.position.x:
                     towards_base.append((1, 0, Direction.East))
-            if abs(ship.position.x - closest.position.x) > len(game_map) / 2:
+            if abs(ship.position.y - closest.position.y) > len(game_map[0]) / 2:
                 # need to wrap around
                 if closest.position.y < ship.position.y:
                     towards_base.append((0, 1, Direction.South))
