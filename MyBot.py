@@ -156,14 +156,6 @@ while True:
 
         actions, mus, _ = model._step(obs)#, M=self.dones)
 
-        # print('actions:', actions,\
-        #         '\nmus:', mus,\
-        #         '\nstates:', states)
-        ## spoilers:
-        ## actions: [1]
-        ## mus: [[0.16987674 0.16746981 0.15873784 0.16824721 0.168809   0.16685943]]
-        ## states: []
-        # TODO: save mus (could just use log file!)
         if not ITS_THE_REAL_DEAL: benchmark.benchmark("ran model")
         frame_mus[ship.id] = [float(mu) for mu in mus[0]]
         if not ITS_THE_REAL_DEAL and random.random() < exporation_proportion:
