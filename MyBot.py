@@ -171,34 +171,10 @@ while True:
             command_queue.append(ship.stay_still())
         elif action == 5:
             # move towards home greedily
-			wrap = lambda distance: len(game_map) / 2 - abs(len(game_map) / 2 - distance)
-            closest = min(me.get_dropoffs(), key=lambda dropoff: wrap(abs(dropoff.position.x - ship.position.x)) + wrap(abs(dropoff.position.y - ship.position.y)))
-            towards_base = []
-            if abs(ship.position.x - closest.position.x) > len(game_map) / 2:
-                # need to wrap around
-                if closest.position.x < ship.position.x:
-                    towards_base.append((1, 0, Direction.East))
-                elif closest.position.x > ship.position.x:
-                    towards_base.append((-1, 0, Direction.West))
-            else:
-                # don't need to wrap around
-                if closest.position.x < ship.position.x:
-                    towards_base.append((-1, 0, Direction.West))
-                elif closest.position.x > ship.position.x:
-                    towards_base.append((1, 0, Direction.East))
-            if abs(ship.position.y - closest.position.y) > len(game_map[0]) / 2:
-                # need to wrap around
-                if closest.position.y < ship.position.y:
-                    towards_base.append((0, 1, Direction.South))
-                elif closest.position.y > ship.position.y:
-                    towards_base.append((0, -1, Direction.North))
-            else:
-                # don't need to wrap around
-                if closest.position.y < ship.position.y:
-                    towards_base.append((0, -1, Direction.North))
-                elif closest.position.y > ship.position.y:
-                    towards_base.append((0, 1, Direction.South))
-            home_action = min(towards_base, key=lambda delta: game_map[(ship.position.x + delta[0], ship.position.y + delta[1])])[2]
+            wrap = lambda distance: board_length / 2 - abs(board_length / 2 - distance)
+            closest = min(me.get_dropoffs() + [me.shipyard,], key=lambda dropoff: wrap(abs(dropoff.position.x - ship.position.x)) + wrap(abs(dropoff.position.y - ship.position.y)))
+            towards_base = game_map.get_unsafe_moves(ship.position, closest)
+            home_action = min(towards_base, key=lambda direction: game_map[(ship.position.x + direction[0], ship.position.y + direction[1])])
             command_queue.append(ship.move(home_action))
         elif action == 6 and ship.halite_amount + game_map[ship.position].halite_amount + me.halite_amount >= 4000\
                 and not game_map[ship.position].has_structure:
