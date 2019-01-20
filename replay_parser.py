@@ -298,7 +298,7 @@ def gen_rewards(state, ship_info, survives):
     elif (ship_info["action"] == 'c'):
         dropped_off = state["halite_map"][ship_info["pos"]["y"]][ship_info["pos"]["x"]] + ship_info['energy'] - 4000
     else:
-        dropped_off = 0
+        dropped_off = 0 if survives else -500
     return ship_info["energy_delta"] * ship_pickup_multiplier + dropped_off
 
 def gen_obs(state, ship_pos):
