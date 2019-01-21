@@ -159,7 +159,7 @@ while True:
         if not ITS_THE_REAL_DEAL: benchmark.benchmark("ran model")
         frame_mus[ship.id] = [float(mu) for mu in mus[0]]
         if not ITS_THE_REAL_DEAL and random.random() < exporation_proportion:
-            action = random.randrange(5) # NOTE: making this 4 excludes dropoffs
+            action = random.randrange(6) # NOTE: making this 6 excludes dropoffs
             logging.info('Moving randomly')
         else:
             action = actions[0]
