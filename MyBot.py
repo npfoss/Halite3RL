@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Python 3.6
 
-exporation_proportion = 0.2
+exploration_proportion = 0.2
 
 from benchmarking import benchmarker
 from unittest.mock import Mock
@@ -19,7 +19,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # check if it's the real deal or just learning mode:
 ITS_THE_REAL_DEAL = '--learning=true' not in sys.argv
 if ITS_THE_REAL_DEAL:
-    exporation_proportion = 0
+    exploration_proportion = 0
 
 # Import the Halite SDK, which will let you interact with the game.
 import hlt
@@ -48,6 +48,10 @@ if not ITS_THE_REAL_DEAL:
 with open("model_params.pkl", "rb") as f:
     learn_params = pkl.load(f)
     env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
+
+params = {}
+with open("params.json") as f:
+    params = json.load(f)
 
 if not ITS_THE_REAL_DEAL: benchmark.benchmark("create model")
 
@@ -158,7 +162,7 @@ while True:
 
         if not ITS_THE_REAL_DEAL: benchmark.benchmark("ran model")
         frame_mus[ship.id] = [float(mu) for mu in mus[0]]
-        if not ITS_THE_REAL_DEAL and random.random() < exporation_proportion:
+        if not ITS_THE_REAL_DEAL and random.random() < exploration_proportion:
             action = random.randrange(6) # NOTE: making this 6 excludes dropoffs
             logging.info('Moving randomly')
         else:
@@ -195,7 +199,12 @@ while True:
     # If the game is in the first 200 turns and you have enough halite, spawn a ship.
     # Don't spawn a ship if you currently have a ship at port, though - the ships will collide.
     if game.turn_number <= 200 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied:
-        command_queue.append(me.shipyard.spawn())
+        # check if there are any ships nearby. if so, don't spawn
+        dist = 999999
+        for ship in me.get_ships():
+            dist = min(dist, game_map.calculate_distance(ship.position, me.position))
+        if dist < params['spawn_dist']:
+            command_queue.append(me.shipyard.spawn())
 
 
     if not ITS_THE_REAL_DEAL:

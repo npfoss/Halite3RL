@@ -7,6 +7,10 @@ from baselines.acer.halite_env import HaliteEnv
 
 # from IPython import embed
 
+def man_dist_lazy(v1, v2):
+    # doesn't do wraparound
+    return abs(v1[0]-v2[0]) + abs(v1[1]-v2[1])
+
 def localize_matrix(m, new_length, old_center_y, old_center_x, add_to_edge_if_missing=False):
     # at most can double
     old_length = m.shape[0]
@@ -298,8 +302,14 @@ def gen_rewards(state, ship_info, survives):
     elif (ship_info["action"] == 'c'):
         dropped_off = state["halite_map"][ship_info["pos"]["y"]][ship_info["pos"]["x"]] + ship_info['energy'] - 4000
     else:
-        dropped_off = 0 if survives else -500
-    return ship_info["energy_delta"] * ship_pickup_multiplier + dropped_off
+        dropped_off = 0 if survives else -999
+    dist = 99999 # to nearest dropoff
+    shippos = (len(ship_info['friendly_ships_halite']) // 2, len(ship_info['friendly_ships_halite']) // 2)
+    for i in range(len(state['friendly_dropoffs'])):
+        for j in range(len(state['friendly_dropoffs'])):
+            if state['friendly_dropoffs'][i][j]:
+                dist = min(dist, man_dist_lazy((i,j), shippos))
+    return ship_info["energy_delta"] * ship_pickup_multiplier + dropped_off - dist * 30 * ship_pickup_multiplier / 20
 
 def gen_obs(state, ship_pos):
     """g

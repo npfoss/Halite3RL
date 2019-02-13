@@ -3,10 +3,11 @@
     "buffer_size": 64,
     "replay_start": 4,
     "replay_ratio": 4000,
-    "gamma": 0.99,
-    "nsteps": 20,
+    "gamma": 0.999,
+    "nsteps": 15,
     "actor_runs_per_upload": 2,
     "secret": "b02c29dc-606b-4f1e-8497-39c7e30c84b0",
     "base_url": "https://tracksingles.com",
-    "min_phlt_size_kinda": 4000
+    "min_phlt_size_kinda": 4000,
+    "spawn_dist": 5
 }
