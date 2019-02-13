@@ -202,8 +202,8 @@ while True:
         # check if there are any ships nearby. if so, don't spawn
         dist = 999999
         for ship in me.get_ships():
-            dist = min(dist, game_map.calculate_distance(ship.position, me.position))
-        if dist < params['spawn_dist']:
+            dist = min(dist, game_map.calculate_distance(ship.position, me.shipyard.position))
+        if dist > params['spawn_dist'] or len(me.get_ships()) < 1:
             command_queue.append(me.shipyard.spawn())
 
 

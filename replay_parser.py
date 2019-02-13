@@ -304,7 +304,7 @@ def gen_rewards(state, ship_info, survives):
     else:
         dropped_off = 0 if survives else -999
     dist = 99999 # to nearest dropoff
-    shippos = (len(ship_info['friendly_ships_halite']) // 2, len(ship_info['friendly_ships_halite']) // 2)
+    shippos = (len(state['friendly_dropoffs']) // 2, len(state['friendly_dropoffs']) // 2)
     for i in range(len(state['friendly_dropoffs'])):
         for j in range(len(state['friendly_dropoffs'])):
             if state['friendly_dropoffs'][i][j]:
