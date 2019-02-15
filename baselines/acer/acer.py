@@ -420,7 +420,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
 
     env , policy , nenvs , ob_space , ac_space , nstack , model = create_model(**learn_params)
     # *** UNCOMMENT IF YOU WANT TO LOAD OLD VARIABLES
-    load_variables("actor.ckpt")
+    # load_variables("actor.ckpt")
     # ***
 
     # runner = HaliteRunner(model=model, env=env, gamma=gamma, nsteps=nsteps)
@@ -437,7 +437,7 @@ def learn(network, env, seed=None, nsteps=20, total_timesteps=int(80e6), q_coef=
     for acer.steps in range(0, total_timesteps, nbatch): #nbatch samples, 1 on_policy call and multiple off-policy calls
         acer.call(on_policy=True)
         if replay_ratio > 0 and buffer.has_atleast(replay_start):
-            n = np.random.poisson(replay_ratio)
+            n = replay_ratio#np.random.poisson(replay_ratio)
             for _ in range(n):
                 acer.call(on_policy=False)  # no simulation steps in this
 

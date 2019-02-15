@@ -302,7 +302,8 @@ def gen_rewards(state, ship_info, survives):
     elif (ship_info["action"] == 'c'):
         dropped_off = state["halite_map"][ship_info["pos"]["y"]][ship_info["pos"]["x"]] + ship_info['energy'] - 4000
     else:
-        dropped_off = 0 if survives else -999
+        dropped_off = 0 if survives else -1000
+    '''
     dist = 99999 # to nearest dropoff
     shippos = (len(state['friendly_dropoffs']) // 2, len(state['friendly_dropoffs']) // 2)
     for i in range(len(state['friendly_dropoffs'])):
@@ -310,6 +311,8 @@ def gen_rewards(state, ship_info, survives):
             if state['friendly_dropoffs'][i][j]:
                 dist = min(dist, man_dist_lazy((i,j), shippos))
     return ship_info["energy_delta"] * ship_pickup_multiplier + dropped_off - dist * 30 * ship_pickup_multiplier / 20
+    '''
+    return dropped_off / 500
 
 def gen_obs(state, ship_pos):
     """g

@@ -28,7 +28,7 @@ def nature_cnn(unscaled_images, **conv_kwargs):
 
 def halite_cnn(unscaled_images, **conv_kwargs):
     """
-    CNN from Nature paper.
+    not the CNN from Nature paper.
     """
     scaled_images = tf.cast(unscaled_images, tf.float32) / 255.
     activ = tf.nn.relu
