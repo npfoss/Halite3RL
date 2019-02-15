@@ -300,7 +300,7 @@ def gen_rewards(state, ship_info, survives):
         move_cost = round(0.1 * initial_halite)
         dropped_off = ship_info["energy"] - move_cost
     elif (ship_info["action"] == 'c'):
-        dropped_off = state["halite_map"][ship_info["pos"]["y"]][ship_info["pos"]["x"]] + ship_info['energy'] - 4000
+        dropped_off = state["halite_map"][ship_info["pos"]["y"]][ship_info["pos"]["x"]] + ship_info['energy'] - 5000
     else:
         dropped_off = 0 if survives else -1000
     '''
