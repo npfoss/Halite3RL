@@ -38,6 +38,7 @@ class HaliteRunner:
 
         while mb_dones is None or len(mb_dones) < self.packing_factor:
             #run a game.
+            print('running')
             size = np.random.choice([32, 40, 48, 56, 64])
             num_players = 2 if (np.random.random() < 0.5) else 4
 
@@ -47,6 +48,7 @@ class HaliteRunner:
             #next, parse the replay
             replay_file_name = j['replay']
 
+            print('reading results')
             for player in range(num_players):
                 # player = np.random.randint(0, num_players-1)
 
@@ -115,6 +117,7 @@ class HaliteRunner:
 
         #return enc_obs, mb_obs, mb_actions, mb_rewards, mb_mus, mb_dones, mb_masks
         # actuall, np.save them instead
+        print('outputting')
         chunk_size = 8000
         num_chunks = 1 + len(enc_obs)//chunk_size
         done_indices = mb_dones.nonzero()[0]
