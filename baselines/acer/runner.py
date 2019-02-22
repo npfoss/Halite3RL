@@ -63,12 +63,16 @@ class HaliteRunner:
                     mb_dones = d
                     # mb_masks = ma
                 else:
-                    enc_obs = np.concatenate((enc_obs, eo), axis=0)
-                    mb_actions = np.concatenate((mb_actions, a), axis=0)
-                    mb_rewards = np.concatenate((mb_rewards, r), axis=0)
-                    mb_mus = np.concatenate((mb_mus, m), axis=0)
-                    mb_dones = np.concatenate((mb_dones, d), axis=0)
-                    # np.concatenate((mb_masks, ma), axis=0)
+                    try:
+                        enc_obs = np.concatenate((enc_obs, eo), axis=0)
+                        mb_actions = np.concatenate((mb_actions, a), axis=0)
+                        mb_rewards = np.concatenate((mb_rewards, r), axis=0)
+                        mb_mus = np.concatenate((mb_mus, m), axis=0)
+                        mb_dones = np.concatenate((mb_dones, d), axis=0)
+                        # np.concatenate((mb_masks, ma), axis=0)
+                    except:
+                        print(eo)
+                        raise
 
         mb_obs = enc_obs_to_obs(enc_obs)
 
