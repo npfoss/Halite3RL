@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Python 3.6
 
-exploration_proportion = 0.2
+exploration_proportion = 0.1
 
 from benchmarking import benchmarker
 from unittest.mock import Mock
